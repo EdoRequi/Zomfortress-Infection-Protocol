@@ -5,6 +5,7 @@
 
 extern int wskazany;
 extern bool debug;
+extern Language Jezyk;
 void koloruj(int fg,int bg);
 char strzalka (int wskazany,int w,int i,int j,int liczba_wrogow);
 char kryt(Gamecontent &Gc,const bool &krytyczny,Character &target, int w,int i,int j);

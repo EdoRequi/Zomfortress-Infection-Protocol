@@ -7,6 +7,8 @@
 #include <thread>
 #pragma once
 using namespace std;
+extern short IDwybor;
+extern short WCzcionki;
 extern unsigned int base_HP_wrog;
 extern bool debug;
 extern int kodscreen;
@@ -30,7 +32,16 @@ void uzyjUTF8(wchar_t znak,int ile);
 void dzwiek(const char* sciezka); //dziwekowe
 void dzwiek_ciagly(const char* sciezka);
 void dzwiek_loop(const char*sciezka);
-void Barka();
+struct Settings;
+extern Settings S;
+
+enum Language{
+    NONE,
+
+    POLSKI,
+    ANGIELSKI
+};
+extern Language Jezyk;
 int Los(int M,int m);
 struct linijkaD{
     string S;
@@ -155,24 +166,42 @@ struct Character
                 maefekty=true;
                 switch (efekt.ID)
                 {
-                case OGLUSZENIE:
-                    cout<<"|";koloruj(15,12);cout<<"[OGLUSZENIE]"<<setw(18)<<right;cout<<" ";koloruj(15,0);cout<<"|\n";
-                    break;
-                case UPICIE:
-                    cout<<"|";koloruj(8,12);cout<<"[UPICIE]";koloruj(15,12);cout<<setw(22)<<right;cout<<" ";koloruj(15,0);cout<<"|\n";
-                    break;
-                case WZMOCNIENIE:
-                    cout<<"|";koloruj(1,12);cout<<"[WZMOCNIENIE]"<<setw(17)<<right;cout<<" ";koloruj(15,0);cout<<"|\n";
-                    break;
-                case ZATRUCIE:
-                    cout<<"|";koloruj(2,12);cout<<"[ZATRUCIE]"<<setw(20)<<right;cout<<" ";koloruj(15,0);cout<<"|\n";
-                    break;
-                case OSLABIENIE:
-                    cout<<"|";koloruj(5,12);cout<<"[OSLABIENIE (psychiczne)]"<<setw(5)<<right;cout<<" ";koloruj(15,12);koloruj(15,0);cout<<"|\n";
-                    break;
-                case KRYTOWANIE:
-                    cout<<"|";koloruj(5,12);cout<<"[KRYTOWANIE]"<<setw(18)<<right;cout<<" ";koloruj(15,12);koloruj(15,0);cout<<"|\n";
-                    break;
+                case OGLUSZENIE:{
+                    switch(Jezyk){
+                    case POLSKI:cout<<"|";koloruj(15,12);cout<<"[OGLUSZENIE]"<<setw(18)<<right;cout<<" ";koloruj(15,0);cout<<"|\n";break;
+                    default:cout<<"|";koloruj(15,12);cout<<"[STUNNED]"<<setw(21)<<right;cout<<" ";koloruj(15,0);cout<<"|\n";break;
+                    }
+                    break;}
+                case UPICIE:{
+                    switch(Jezyk){
+                    case POLSKI:cout<<"|";koloruj(15,12);cout<<"[UPICIE]"<<setw(22)<<right;cout<<" ";koloruj(15,0);cout<<"|\n";break;
+                    default:cout<<"|";koloruj(15,12);cout<<"[DRUNK]"<<setw(23)<<right;cout<<" ";koloruj(15,0);cout<<"|\n";break;
+                    }
+                    break;}
+                case WZMOCNIENIE:{
+                    switch(Jezyk){
+                    case POLSKI:cout<<"|";koloruj(15,12);cout<<"[WZMOCNIENIE]"<<setw(17)<<right;cout<<" ";koloruj(15,0);cout<<"|\n";break;
+                    default:cout<<"|";koloruj(15,12);cout<<"[POWERED]"<<setw(21)<<right;cout<<" ";koloruj(15,0);cout<<"|\n";break;
+                    }
+                    break;}
+                case ZATRUCIE:{
+                    switch(Jezyk){
+                    case POLSKI:cout<<"|";koloruj(15,12);cout<<"[ZATRUCIE]"<<setw(20)<<right;cout<<" ";koloruj(15,0);cout<<"|\n";break;
+                    default:cout<<"|";koloruj(15,12);cout<<"[POISONING]"<<setw(19)<<right;cout<<" ";koloruj(15,0);cout<<"|\n";break;
+                    }
+                    break;}
+                case OSLABIENIE:{
+                    switch(Jezyk){
+                    case POLSKI:cout<<"|";koloruj(15,12);cout<<"[OSLABIENIE (psychiczne)]"<<setw(5)<<right;cout<<" ";koloruj(15,0);cout<<"|\n";break;
+                    default:cout<<"|";koloruj(15,12);cout<<"[(psychological) WEAKNESS]"<<setw(4)<<right;cout<<" ";koloruj(15,0);cout<<"|\n";break;
+                    }
+                    break;}
+                case KRYTOWANIE:{
+                    switch(Jezyk){
+                        case POLSKI:cout<<"|";koloruj(5,12);cout<<"[KRYTOWANIE]"<<setw(18)<<right;cout<<" ";koloruj(15,12);koloruj(15,0);cout<<"|\n";\
+                        default:cout<<"|";koloruj(5,12);cout<<"[CRITS]"<<setw(23)<<right;cout<<" ";koloruj(15,12);koloruj(15,0);cout<<"|\n";
+                    }
+                    break;}
                 default:
                     cout<<"BLAD\n";
 
@@ -189,7 +218,12 @@ struct Character
     }
     void skrytowanie()const{
         dzwiek("Audio_RPG\\krytyczny_cios.wav");
-        koloruj(10,0);cout<<Imie<<" zadaje krytyczne obrazenia!    \n";koloruj(7,0);
+        koloruj(10,0);
+        switch (Jezyk){
+            case POLSKI:cout<<Imie<<" zadaje krytyczne obrazenia!    \n"; break;
+            default: cout<<Imie<<" deals critical damage!    \n"; break;
+            }
+        koloruj(7,0);
         this_thread::sleep_for(chrono::seconds(2));
     }
     AttackResult damage(Character &target,int ilosc){
@@ -210,15 +244,30 @@ struct Character
         case EXPLODER:{
             this_thread::sleep_for(chrono::seconds(3));
         dzwiek("Audio_RPG\\extinguish.wav");
-        koloruj(11,8);cout<<"Bomba nalezaca do "<<Imie<<" gasnie!\n";koloruj(7,0);
-        this_thread::sleep_for(chrono::seconds(2));
-        cout<<"Zdesperowany "<<Imie<<" idzie do domu...\n";
+        koloruj(11,8);
+        switch (Jezyk){
+            case POLSKI:
+                cout<<"Bomba nalezaca do "<<Imie<<" gasnie!\n";koloruj(7,0);
+                this_thread::sleep_for(chrono::seconds(2));
+                cout<<"Zdesperowany "<<Imie<<" idzie do domu...\n";
+                break;
+            default:
+                cout<<"The bomb belonging to "<<Imie<<" has extinguished!\n";koloruj(7,0);
+                this_thread::sleep_for(chrono::seconds(2));
+                cout<<"Disappointed "<<Imie<<" goes back home...\n";
+                break;
+            }
         this_thread::sleep_for(chrono::seconds(2));
         break;
         }
         default:{
             dzwiek("Audio_RPG\\Banana_slip.wav");
-            koloruj(11,8);cout<<Imie<<" pudluje!    \n";koloruj(7,0);
+            koloruj(11,8);
+            switch (Jezyk){
+            case POLSKI:cout<<Imie<<" pudluje!    \n"; break;
+            default: cout<<Imie<<" misses!     \n"; break;
+            }
+            koloruj(7,0);
             this_thread::sleep_for(chrono::seconds(2));
             break;
             }
@@ -258,6 +307,7 @@ struct Character
     }
 };
 struct Gamecontent{
+    Settings &S;
     const bool &debug;
     Character &gracz;
     vector<Character*> &enemies;
@@ -274,12 +324,13 @@ struct Gamecontent{
     ScreenEfekt SE;
     bool &kolejComm;
 };
+void Barka(Gamecontent &Gc);
 void usunprzedzial(string &s,int I);
 void Dialog(string Nazwa, int kolor_fontu,int kolor_tla, string S);
 void AdvDialog(string Nazwa, int kolor_fontu, int kolor_tla, vector<linijkaD> Kwestie);
 void nowyWrog(Gamecontent &Gc, unsigned int &base_HP_wrog); //wywolanie nowych obiektow
-void noweDzialko(long x,Character* &dzialko);
-void nowyZasobnik(long x,Character* &zasobnik);
+void noweDzialko(long x,Character* &dzialko,const Language& J);
+void nowyZasobnik(long x,Character* &zasobnik,const Language &J);
 void panele(Gamecontent &Gc,Przedmiot ult,Przedmiot ulw,Przedmiot ulm,Przedmiot fajerwerk,Przedmiot tel,Przedmiot zatyczki); //graficzne
 void ofensywa_wybrana(Gamecontent &Gc);
 void wsparcie_wybrane(Gamecontent &Gc);

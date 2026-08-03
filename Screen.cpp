@@ -2680,14 +2680,26 @@ void narysujScene(Gamecontent &Gc){
         }
     }
     koloruj(4,0);
-     cout<<"-- WALKA "<<Gc.x<<"--"<<endl;
+    switch(Jezyk){
+    case POLSKI:cout<<"-- WALKA "<<Gc.x<<"--"<<endl;break;
+    default:cout<<"-- WAVE "<<Gc.x<<"--"<<endl;
+    }
      koloruj(7,0);
      cout<<endl;
-    pokazStatystyki(Gc.gracz, "GRACZ",Gc);
-    if (czyZyje(Gc.dzialko)) pokazStatystyki(*Gc.dzialko, "BUDOWLA",Gc);
-    if (czyZyje(Gc.zasobnik)) pokazStatystyki(*Gc.zasobnik, "BUDOWLA",Gc);
-    for (const Character* wrog:Gc.enemies){
-        if (czyZyje(wrog)==true) pokazStatystyki(*wrog,"WROG",Gc);
+    switch(Jezyk){
+    case POLSKI:{pokazStatystyki(Gc.gracz, "GRACZ",Gc);
+        if (czyZyje(Gc.dzialko)) pokazStatystyki(*Gc.dzialko, "BUDOWLA",Gc);
+        if (czyZyje(Gc.zasobnik)) pokazStatystyki(*Gc.zasobnik, "BUDOWLA",Gc);
+        for (const Character* wrog:Gc.enemies){
+            if (czyZyje(wrog)==true) pokazStatystyki(*wrog,"WROG",Gc);
+    }break;}
+    default:{pokazStatystyki(Gc.gracz, "PLAYER",Gc);
+        if (czyZyje(Gc.dzialko)) pokazStatystyki(*Gc.dzialko, "BUILD",Gc);
+        if (czyZyje(Gc.zasobnik)) pokazStatystyki(*Gc.zasobnik, "BUILD",Gc);
+        for (const Character* wrog:Gc.enemies){
+            if (czyZyje(wrog)==true) pokazStatystyki(*wrog,"ENEMY",Gc);
+        }
+    break;}
     }
     if (wskazany < 1 || static_cast<size_t>(wskazany)>Gc.enemies.size()) {
     cout << "BLAD: wskazany poza zakresem! wskazany = " << wskazany << ", Gc.enemies.size() = " << Gc.enemies.size() << endl;
@@ -2794,14 +2806,26 @@ void screen(Gamecontent &Gc)
         }
     }
     koloruj(0,4);
-     cout<<"-- WALKA "<<Gc.x<<"--"<<endl;
+    switch(Jezyk){
+    case POLSKI:cout<<"-- WALKA "<<Gc.x<<"--"<<endl;break;
+    default:cout<<"-- WAVE "<<Gc.x<<"--"<<endl;
+    }
      koloruj(7,0);
      cout<<endl;
-    pokazStatystyki(Gc.gracz, "GRACZ",Gc);
-    if (czyZyje(Gc.dzialko)) pokazStatystyki(*Gc.dzialko, "BUDOWLA",Gc);
-    if (czyZyje(Gc.zasobnik)) pokazStatystyki(*Gc.zasobnik, "BUDOWLA",Gc);
-    for (const Character* wrog:Gc.enemies){
-        if (czyZyje(wrog)==true) pokazStatystyki(*wrog,"WROG",Gc);
+     switch(Jezyk){
+    case POLSKI:{pokazStatystyki(Gc.gracz, "GRACZ",Gc);
+        if (czyZyje(Gc.dzialko)) pokazStatystyki(*Gc.dzialko, "BUDOWLA",Gc);
+        if (czyZyje(Gc.zasobnik)) pokazStatystyki(*Gc.zasobnik, "BUDOWLA",Gc);
+        for (const Character* wrog:Gc.enemies){
+            if (czyZyje(wrog)==true) pokazStatystyki(*wrog,"WROG",Gc);
+    }break;}
+    default:{pokazStatystyki(Gc.gracz, "PLAYER",Gc);
+        if (czyZyje(Gc.dzialko)) pokazStatystyki(*Gc.dzialko, "BUILD",Gc);
+        if (czyZyje(Gc.zasobnik)) pokazStatystyki(*Gc.zasobnik, "BUILD",Gc);
+        for (const Character* wrog:Gc.enemies){
+            if (czyZyje(wrog)==true) pokazStatystyki(*wrog,"ENEMY",Gc);
+        }
+    break;}
     }
     if (Gc.wskazany < 1 || Gc.wskazany >Gc.enemies.size()) {
     cout << "BLAD: wskazany poza zakresem! wskazany = " << wskazany << ", Gc.enemies.size() = " << Gc.enemies.size() << endl;
