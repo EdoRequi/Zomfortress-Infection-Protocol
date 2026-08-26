@@ -454,8 +454,8 @@ void panele(Gamecontent &Gc,Przedmiot ult,Przedmiot ulw,Przedmiot ulm,Przedmiot 
     cout<<string(75,(char)205)<<(char)188<<endl;
     cout<<endl;
     switch(Gc.S.Jezyk){
-        case POLSKI: cout<<"\\Wcisnij X, kiedy bedziesz gotowy\\"<<endl;
-        default: cout<<"\\Press X, when you are ready\\"<<endl;
+        case POLSKI: cout<<"\\Wcisnij X, kiedy bedziesz gotowy\\"<<endl; break;
+        default: cout<<"\\Press X, when you are ready\\"<<endl; break;
     }
     cout<<endl;}
     else

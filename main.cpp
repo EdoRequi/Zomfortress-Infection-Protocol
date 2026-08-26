@@ -55,7 +55,7 @@ void ustawienia(bool &debug,Settings &S)
         default:cout<<"*2. BMI of your mother ="<<setw(4)<<left<<S.WCzcionki<<"+/-                       "<<endl<<endl;break;//easter egg
         }
         cout<<" PRESS ALT+F4 FOR FREE ROBUX"<<endl;//easter egg
-        cout<<"VERSION: INDEV 0.2"<<endl;
+        cout<<"VERSION: INDEV 0.2.1"<<endl;
         cout<<"X - wyjscie                                     ";
         ust=_getch();
         switch (ust){
@@ -121,11 +121,12 @@ void menu(bool &debug,Settings &S)
             przycisk("ENGLISH",S,2);
             char Lt = tolower(_getch());
             switch (Lt){
-                case 'w': if(S.IDwybor>1) S.IDwybor--;
-                    S.Jezyk=Language::POLSKI; break;
-                case 's': if(S.IDwybor<2) S.IDwybor++;
-                    S.Jezyk=Language::ANGIELSKI; break;
-                case 13: wmenu=true;
+                case 'w': if(S.IDwybor>1) S.IDwybor--;break;
+                case 's': if(S.IDwybor<2) S.IDwybor++; break;
+                case 13: {
+                    if(S.IDwybor==1)S.Jezyk=Language::POLSKI;
+                    else if (S.IDwybor==2)S.Jezyk=Language::ANGIELSKI;
+                    wmenu=true;}
             }
         }
     }
@@ -275,7 +276,7 @@ void story()//historyjka
             cout << "|";koloruj (0,15);cout<<" koszmarowi, ktory nie tylko zagraza jego zyciu, ale moze";koloruj (7,0);cout<<"|\n";
             cout << "|";koloruj (0,15);cout<<" stac sie miedzynarodowym skandalem. Jesli ten sekret    ";koloruj (7,0);cout<<"|\n";
             cout << "|";koloruj (0,15);cout<<" wyjdzie na jaw, honor garnizonu zostanie splamiony      ";koloruj (7,0);cout<<"|\n";
-            cout << "|";koloruj (0,15);cout<<" na zawsze.                                               ";koloruj (7,0);cout<<"|\n";
+            cout << "|";koloruj (0,15);cout<<" na zawsze.                                              ";koloruj (7,0);cout<<"|\n";
             cout << "|";koloruj (0,15);cout<<"                                                         ";koloruj (7,0);cout<<"|\n";
             cout << "|";koloruj (0,15);cout<<"  Czy podejmiesz sie misji ocalenia bazy i zatrzymania   ";koloruj (7,0);cout<<"|\n";
             cout << "|";koloruj (0,15);cout<<" epidemii, nim bedzie za pozno?                          ";koloruj (7,0);cout<<"|\n";
