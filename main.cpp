@@ -4,17 +4,14 @@
 #include <thread>
 #include <windows.h>
 #include <vector>
+
 #include "Gamestuff.h"
-#include "Screen.h"
 using namespace std;
 using TP = TypPostaci;
+using GW=Globalne;
+using namespace std::chrono;
 int score=0;
 bool debug=false;
-struct Settings{
-    short &IDwybor;
-    short &WCzcionki;
-    Language &Jezyk;
-};
 void UstawTekst(short width, short height)
 {
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);//operator kontroli konsola
@@ -33,11 +30,6 @@ void uzyjUTF8(wchar_t znak, int ile){
     HANDLE h=GetStdHandle(STD_OUTPUT_HANDLE);
     for (int i=0;i<ile;i++)WriteConsoleW(h,&znak,1,NULL,NULL);
 }
-void koloruj(int fg,int bg) {
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    WORD kolor = (bg << 4) | fg; // Tlo przesuniete w lewo o 4 bity
-    SetConsoleTextAttribute(hConsole, kolor);
-}
 void ustawienia(bool &debug,Settings &S)
 {
     system("cls");
@@ -48,15 +40,11 @@ void ustawienia(bool &debug,Settings &S)
     for (int a=0;a<8;a++){
         cout<<"                                                                                                    "<<endl;
         }
-        cout<<"*1. Debug="<<setw(10)<<left<<(debug==true?"ENABLED *":"DISABLED *")<<"                          "<<endl<<endl;
-        switch(S.Jezyk){
-        case POLSKI:cout<<"*2. Wielkosc tekstu ="<<setw(4)<<left<<S.WCzcionki<<"+/-                       "<<endl<<endl;break;
-        case ANGIELSKI:cout<<"*2. Text size ="<<setw(4)<<left<<S.WCzcionki<<"+/-                       "<<endl<<endl;break;
-        default:cout<<"*2. BMI of your mother ="<<setw(4)<<left<<S.WCzcionki<<"+/-                       "<<endl<<endl;break;//easter egg
-        }
+        cout<<S.L.get(Tx::Sw_ENDEBUG)<<setw(10)<<left<<(debug==true?"ENABLED *":"DISABLED *")<<"                          "<<endl<<endl;
+        cout<<S.L.get(Tx::Sw_FONTSIZE)<<setw(4)<<left<<S.WCzcionki<<"+/-                       "<<endl<<endl;
         cout<<" PRESS ALT+F4 FOR FREE ROBUX"<<endl;//easter egg
-        cout<<"VERSION: INDEV 0.2"<<endl;
-        cout<<"X - wyjscie                                     ";
+        cout<<"VERSION: INDEV 0.3"<<endl;
+        cout<<S.L.get(Tx::X_for_exit)<<"                                     ";
         ust=_getch();
         switch (ust){
         case '1':
@@ -112,21 +100,20 @@ void menu(bool &debug,Settings &S)
 {
     koloruj(15,12);
     bool wmenu=false;
-    if (S.Jezyk==Language::NONE){
-        while(!wmenu){
-                system("cls");
-            cout<<"                                        SELECT LANGUAGE:                                              "<<endl;
-            przycisk("POLSKI",S,1);
-            cout<<endl;
-            przycisk("ENGLISH",S,2);
-            char Lt = tolower(_getch());
-            switch (Lt){
-                case 'w': if(S.IDwybor>1) S.IDwybor--;
-                    S.Jezyk=Language::POLSKI; break;
-                case 's': if(S.IDwybor<2) S.IDwybor++;
-                    S.Jezyk=Language::ANGIELSKI; break;
-                case 13: wmenu=true;
-            }
+    while(!wmenu){
+            system("cls");
+        cout<<"                                        SELECT LANGUAGE:                                              "<<endl;
+        przycisk("POLSKI",S,1);
+        cout<<endl;
+        przycisk("ENGLISH",S,2);
+        char Lt = tolower(_getch());
+        switch (Lt){
+            case 'w': if(S.IDwybor>1) S.IDwybor--;break;
+            case 's': if(S.IDwybor<2) S.IDwybor++;break;
+            case 13:
+                if(S.IDwybor==1)S.L.setLanguage(Language::POLSKI);
+                else if(S.IDwybor==2)S.L.setLanguage(Language::ANGIELSKI);
+                wmenu=true;break;
         }
     }
     bool wgrze=false; S.IDwybor=0;
@@ -144,30 +131,12 @@ void menu(bool &debug,Settings &S)
         cout<<"                                           (redesigned)                                               "<<endl;
         cout<<string(102,(char)223)<<endl;
         cout<<"                                                                                                      "<<endl;
-        switch (S.Jezyk){
-        case POLSKI:
-            przycisk("GRAJ 1P",S,1);
-            cout<<"                                                                                                      "<<endl;
-            przycisk("GRAJ 2P",S,2);
-            cout<<"                                                                                                      "<<endl;
-            przycisk("USTAWIENIA",S,3);
-            break;
-        case ANGIELSKI:
-            przycisk("PLAY 1P",S,1);
-            cout<<"                                                                                                      "<<endl;
-            przycisk("PLAY 2P",S,2);
-            cout<<"                                                                                                      "<<endl;
-            przycisk("SETTINGS",S,3);
-            break;
-        default:
-            //easter egg
-            przycisk("P1 YALP",S,1);
-            cout<<"                                                                                                      "<<endl;
-            przycisk("P2 YALP",S,2);
-            cout<<"                                                                                                      "<<endl;
-            przycisk("SGNITTES",S,3);
-            break;
-        }
+        przycisk(L.get(Tx::But_PLAY1),S,1);
+        cout<<endl;
+        przycisk(L.get(Tx::But_PLAY2),S,2);
+        cout<<"                                            ";koloruj(12,15);cout<<"^Not avaliable yet^";koloruj(15,12);cout<<"                           "<<endl;
+        przycisk(L.get(Tx::But_Sett),S,3);
+        cout<<endl;
         cout<<"Creator: EdoRequi                                                                                     \n"; //credits
         char st = tolower(_getch());
         switch (st)
@@ -199,8 +168,8 @@ void story()//historyjka
     char D=' ';
     int str=0;
     while(D!='x'&&str<=1){
-    switch (S.Jezyk){
-        case POLSKI:{
+    switch (S.L.whatLanguage()){
+        case Language::POLSKI:{
         cout << " _____________________________________________________\n";
         cout << "|";koloruj (0,15);cout<<" 13 maja 2012 roku. Dzien, ktory mial przejsc do  \\ ";koloruj(7,0);cout<<"|_\n";
         cout << "|"; koloruj (0,15); cout<<" historii jako poczatek koszmaru.                \\    "; koloruj (7,0); cout<<"|_\n";
@@ -225,7 +194,7 @@ void story()//historyjka
         cout << "|";koloruj (0,15);cout<<"...                                    ==               ";koloruj (7,0);cout<<"|\n";
         cout << " ";koloruj (0,15);cout<<"________________________________________________________";koloruj (7,0);cout<<"\n";
         cout << "WCISNIJ 'X', ABY PRZEJSC DALEJ" << endl;break;}
-        case ANGIELSKI:{
+        case Language::ANGIELSKI:{
         cout << " _____________________________________________________\n";
         cout << "|";koloruj (0,15);cout<<" On May 13th, 2012 year. The day, which happened to \\ ";koloruj(7,0);cout<<"|_\n";
         cout << "|"; koloruj (0,15); cout<<" be the beginning of this nightmare.                 \\   "; koloruj (7,0); cout<<"|\n";
@@ -250,7 +219,7 @@ void story()//historyjka
         cout << "|";koloruj (0,15);cout<<" stock? Better not to ask).                              ";koloruj (7,0);cout<<"|\n";
         cout << "|";koloruj (0,15);cout<<"...                                    ==               ";koloruj (7,0);cout<<"|\n";
         cout << " ";koloruj (0,15);cout<<"________________________________________________________";koloruj (7,0);cout<<"\n";
-        cout << "PRESS 'X' TO CONTINUE" << endl;break;}
+        cout << L.get(Tx::X_for_continue) << endl;break;}
         default: str++; break;
     }
     dzwiek("Audio_RPG\\Undertale_onceuponatime.wav");
@@ -260,8 +229,8 @@ void story()//historyjka
         D='l';
         str++;
         system("cls");
-        switch (S.Jezyk){
-            case POLSKI:{
+        switch (S.L.whatLanguage()){
+            case Language::POLSKI:{
             cout << " _________________________________________________________\n";
             cout << "|";koloruj (0,15);cout<<"  Kiedy nad ranem ocknal sie do rzeczywistosci, ktora  ";koloruj(12,15);cout<<"#~";koloruj (7,0);cout<<"|\n";
             cout << "|";koloruj (0,15);cout<<" sam nieopatrznie stworzyl, bylo juz za pozno.           ";koloruj (7,0);cout<<"|\n";
@@ -282,7 +251,7 @@ void story()//historyjka
             cout << "|";koloruj (0,15);cout<<"_________________________________________________________";koloruj (7,0);cout<<"|\n";
             cout << endl << endl;
             cout << "WCISNIJ 'X', ABY PRZEJSC DALEJ" << endl;break;}
-            case ANGIELSKI:{
+            case Language::ANGIELSKI:{
             cout << " _________________________________________________________\n";
             cout << "|";koloruj (0,15);cout<<"  In the morning, when he regained consciousness, it was";koloruj(12,15);cout<<"#~";koloruj (7,0);cout<<"|\n";
             cout << "|";koloruj (0,15);cout<<" too late.                                               ";koloruj (7,0);cout<<"|\n";
@@ -326,14 +295,18 @@ int main()
                 dzwiek("Audio_RPG\\Demoman_response_battlecry.wav");
             else
                 dzwiek("Audio_RPG\\Demoman_response_battlecry2.wav");
-    Character gracz(TP::GRACZ,"DemomanTF2",175,175,20,0,10,1,false,0.01,0.07);
+    Player gracz(TP::GRACZ,"DemomanTF2",175,175,20,0,10,1,TypRoli::DEMOMAN,false,0.01,0.08);
     Character* dzialko=new Character(TP::DZIALKO,"Dzialko Straznicze",0,0,0,0,0,0);
     Character* zasobnik=new Character(TP::ZASOBNIK,"Zasobnik",0,0,0,0,0,0);
-    vector<Character*> enemies;
-    wybor=false;
-    Character* krytT=nullptr;
-    ScreenEfekt r;
-    Gamecontent Gc={S,debug,gracz,enemies,dzialko,zasobnik,x,kodscreen,e,wskazany,smigniecie,wybor,dlacase,krytT,r,kolejComm};
+    vector<Character*> enemies;vector<std::unique_ptr<NonLivingObject>> Obiekty;
+    bool wybor=false,dlacase=false;Globalne Wydarzenie=GW::NONE;
+    int wskazany=1;
+    vector<Character*> affectedT;
+    vector<DamageResult> dane;
+    ScreenEfekt R;
+    chrono::steady_clock::time_point CzasTrwania = std::chrono::steady_clock::now();
+    Gamecontent Gc={S,debug,gracz,enemies,Obiekty,dzialko,zasobnik,x,wskazany,smigniecie,Wydarzenie,wybor,dlacase,affectedT,dane,R,kolejComm,CzasTrwania};
+    gracz.dodajwyposazeniestartowe(Gc.S.L);
     nowyWrog(Gc,base_HP_wrog);
     ciagla_walka(Gc,Barka_status,CzyBylSklep);
     this_thread::sleep_for(chrono::seconds(1));
@@ -343,7 +316,7 @@ int main()
     else
         dzwiek_ciagly("Audio_RPG\\Demoman_response_fail2.wav");
     this_thread::sleep_for(chrono::milliseconds(10));
-    kodscreen=69;
+    Gc.Wydarzenie=GW::DEATH;
     screen(Gc);
     cout << "\n" << gracz.Imie << " zostal pokonany! Przegrales!" << endl;
     dzwiek_ciagly("Audio_RPG\\Demoman_response_death.wav");

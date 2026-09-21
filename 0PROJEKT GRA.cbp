@@ -2,7 +2,7 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="0PROJEKT GRA" />
+		<Option title="ZomfortressIE" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
@@ -19,7 +19,7 @@
 				</Linker>
 			</Target>
 			<Target title="Release">
-				<Option output="bin/Release/0PROJEKT GRA" prefix_auto="1" extension_auto="1" />
+				<Option output="Zomfortress" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
@@ -41,6 +41,11 @@
 			<Add option="-static-libgcc" />
 			<Add option="-static-libstdc++" />
 		</Linker>
+		<Unit filename="Character.cpp" />
+		<Unit filename="Character.h" />
+		<Unit filename="Gamelogic.h" />
+		<Unit filename="GamelogicLoc.cpp" />
+		<Unit filename="GamelogicPrimary.cpp" />
 		<Unit filename="Gamerules.h">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
@@ -48,10 +53,15 @@
 		<Unit filename="Gamestuff.h">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
+		<Unit filename="ItemManagement.cpp" />
+		<Unit filename="ItemManagement.h" />
+		<Unit filename="Player.cpp" />
+		<Unit filename="Player.h" />
 		<Unit filename="Screen.cpp" />
 		<Unit filename="Screen.h">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
+		<Unit filename="SoundManagement.h" />
 		<Unit filename="main.cpp" />
 		<Extensions />
 	</Project>

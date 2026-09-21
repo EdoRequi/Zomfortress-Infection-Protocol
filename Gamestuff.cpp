@@ -1,7 +1,5 @@
 #include <iostream>
 #include "Gamestuff.h"
-#include "Screen.h"
-#include <cstdlib>
 #include <conio.h>
 #include <time.h>
 #include <thread>
@@ -12,69 +10,24 @@
 using namespace std;
 using TP=TypPostaci;
 using TE=TypEfektu;
-int liczba_wrogow=1;
-short IDwybor=0;
-short WCzcionki=14;
-Language Jezyk=Language::NONE;
-unsigned int base_HP_wrog=150;
-int kodscreen=0;
+using Tx=TextID;
+using GW=Globalne;
 int glowy=0;
-bool dlacase=false;
-short e=0;
 bool smigniecie=false;
-short tarcza=2;
-short WATK=20;
-short MATK=20;
 bool kolejComm=false;
 bool ogluszenie=false;//warunek ogluszenia
 int czekaj=0; //kolejka ogluszen
 bool pijany=false;//efekt upicia
-bool czyZyje(const Character* ch){
-    return ch!=nullptr&&ch->HP>0;
+void tag_notyfikacji(const string &napis,int kolor_fontu,int kolor_tla){
+    int miejsce=napis.size();
+    koloruj(kolor_fontu,kolor_tla);cout<<char(201)<<string(miejsce+4,'=')<<char(187);koloruj(15,0);cout<<"\n";
+    koloruj(kolor_fontu,14);cout<<"|  "<<napis<<"  |";koloruj(15,0);cout<<"\n";
+    koloruj(0,14);cout<<char(200)<<string(miejsce+4,'=')<<char(188);koloruj(15,0);cout<<"\n";
 }
-bool czyZyje(const Character &ch){
-    return ch.HP>0;
-}
-void dzwiek(const char* sciezka)
-{
-    PlaySound(TEXT(sciezka),NULL,SND_FILENAME| SND_ASYNC);
-}
-void dzwiek_loop(const char* sciezka)
-{
-    PlaySound(TEXT(sciezka),NULL,SND_FILENAME| SND_LOOP | SND_ASYNC);
-}
-void dzwiek_ciagly(const char* sciezka)
-{
-    PlaySound(TEXT(sciezka),NULL,SND_FILENAME| SND_SYNC);
-}
-struct Settings{
-    short &IDwybor;
-    short &WCzcionki;
-    Language &Jezyk;
-};
-Settings S={IDwybor,WCzcionki,Jezyk};
-Przedmiot ult= {"Ulepszenie tarczy",55,1}; //NOTA: w 3 pierwszych przypadkach wartosc quant oznacza poziom ulepszenia (domyslnie 1)
-Przedmiot ulw= {"Ulepszenie wyrzutnika",90,1};
-Przedmiot ulm= {"Ulepszenie miecza",120,1};
-Przedmiot fajerwerk={"Flashbang",25,0};
-Przedmiot tel={"Telefon do Inzyniera",500,0};
-Przedmiot zatyczki={"Zatyczki do uszu",250,0};
 void Barka(Gamecontent &Gc)
 {
     system("cls");
-    switch (Gc.S.Jezyk){
-    case POLSKI:
-        koloruj(0,14);cout<<"+======================================+";koloruj(15,0);cout<<"\n";
-        koloruj(0,14);cout<<"|  Osiagnales swieta liczbe HP = 2137  |";koloruj(15,0);cout<<"\n";
-        koloruj(0,14);cout<<"+======================================+";koloruj(15,0);cout<<"\n";
-        break;
-    case ANGIELSKI:
-        koloruj(0,14);cout<<"+=========================================+";koloruj(15,0);cout<<"\n";
-        koloruj(0,14);cout<<"| You have reached the holy number = 2137 |";koloruj(15,0);cout<<"\n";
-        koloruj(0,14);cout<<"+=========================================+";koloruj(15,0);cout<<"\n";\
-        break;
-    default: break;
-    }
+    tag_notyfikacji(Gc.S.L.get(Tx::HolyNumberAcquire),0,14);
     Beep(260,1000);Beep(440,1000);Beep(440,1000);
     Beep(220,250);
     Beep(440,250);Beep(495,250);Beep(523,250);Beep(495,250);Beep(440,250);
@@ -84,7 +37,7 @@ void Barka(Gamecontent &Gc)
     Beep(160,250);
     Beep(345,250);Beep(392,250);Beep(440,250);Beep(392,250);Beep(345,250);
     Beep(330,1100);Beep(330,1100);
-    this_thread::sleep_for(chrono::seconds(1));
+    this_thread::sleep_for(ZaWarudo::seconds(1));
     Beep(260,1000);Beep(440,1000);Beep(440,1000);
     Beep(220,250);
     Beep(440,250);Beep(495,250);Beep(523,250);Beep(495,250);Beep(440,250);
@@ -134,7 +87,7 @@ void Dialog(string Nazwa, int kolor_fontu,int kolor_tla, string S){
 void AdvDialog(string Nazwa, int kolor_fontu, int kolor_tla, vector<linijkaD> Kwestie){
     koloruj(kolor_fontu,kolor_tla);cout<<" "<<string(71,'_');koloruj (7,0);cout<<"\n";
     int ile=0;
-    bool imiewypowiedziane=false,koniec=false;
+    bool imiewypowiedziane=false;
     for (auto k:Kwestie){
         ile++;
         dzwiek(k.path);
@@ -154,310 +107,85 @@ void AdvDialog(string Nazwa, int kolor_fontu, int kolor_tla, vector<linijkaD> Kw
             }
         }
         if (ile==Kwestie.size()){koloruj(kolor_fontu,kolor_tla);cout<<" "<<string(71,char(196));koloruj (7,0);cout<<"\n";}
-        this_thread::sleep_for(chrono::milliseconds(k.czas));
+        this_thread::sleep_for(ZaWarudo::milliseconds(k.czas));
     }
 }
-
 short otrzezwienie=0;
-Character* generujZombie(long x,unsigned int &lok_HP_wrog,const bool CV,const Language &J){
-    Character* jedn=nullptr;
-        short losujszablon=Los(100,0);
-        unsigned int health;
-        unsigned short L;
-        switch (x)
-        {
-        case 1:
-            health=lok_HP_wrog;
-            jedn = new Character(TP::ZWYKLY,"Zombie", health, health, 20+(x * 2), x * 0.8, 0, 1, false,0.005,0.1);
-            //NOTA: TEN TEKST SLUZYL DO TESTOW
-            //if(!CV) jedn=new Character(TP::COMMANDER,"Zombie Dowodca",health,health,50+(x*2),x*2,0,2,false,0.02,0.01);
-            //jedn = new Character(TP::ZWYKLY,"TEST", health, health, 20+(x * 2), x * 0.8, 0, 1, false,0.005,1);
-            //jedn = new Character(TP::TOKSYCZNY,"Toksyczny Zombie", health, health, 20+(x * 2), x * 0.8, 0, 1, false,0.005);
-            //jedn=new Character("Zombie Samobojca",health, health,9999, x*1.2, 0,1,false,0.005,3);
-            //jedn=new Character("Naladowany Zombie",health, health, 25+(x*1.7), x*1, 10,2,false,0.01);
-            break;
-        case 2 ... 5:{
-            switch (losujszablon){
-            case 0 ... 45:
-                health = lok_HP_wrog*pow(1.06,x-1);
-                jedn = new Character(TP::ZWYKLY,"Zombie", health, health, 20+(x * 2), x * 0.6, 0, 1, false,0.05,0.03);
-                break;
-            case 46 ... 59:{
-                health=lok_HP_wrog*pow(1.05,x-1);
-                string NameZ;
-                switch (J){
-                case POLSKI: NameZ="Szybki Zombie";break;
-                default: NameZ="Fast Zombie";break;
-                }
-                jedn=new Character(TP::SZYBKI,NameZ,health, health, 25+(x*1.1), x*0.6, 0,1,true,0.06,0.05);
-                break;}
-            case 60 ... 69:{
-                health=lok_HP_wrog*pow(1.08,x-1);
-                string NameZ;
-                switch (J){
-                case POLSKI: NameZ="Naladowany Zombie";break;
-                default: NameZ="Charged Zombie";break;
-                }
-                jedn=new Character(TP::NALADOWANY,NameZ,health, health, 20+(x*1.5), x*0.8, 0,2,false,0.03,0.06);
-                break;}
-            case 70 ... 99:{
-                health=lok_HP_wrog*pow(1.09,x-1);
-                string NameZ;
-                switch (J){
-                case POLSKI: NameZ="Tytanowy Zombie";break;
-                default: NameZ="Titan Zombie";break;
-                }
-                jedn=new Character(TP::TYTANOWY,NameZ,health, health, 40+(x*2), x*1, 0,3,false,0.05,0.03);
-                break;}
-            }
-        break;}
-        case 6 ... 10:{
-            switch (losujszablon){
-            case 0 ... 19:
-                health=lok_HP_wrog*pow(1.02,x-1);
-                jedn=new Character(TP::ZWYKLY,"Zombie",health, health, 25+(x*2.3), x*1, 0,1,false,0.04,0.03);
-                break;
-            case 20 ... 37:{
-                health=lok_HP_wrog*pow(1.01,x-1);
-                string NameZ;
-                switch (J){
-                case POLSKI: NameZ="Szybki Zombie";break;
-                default: NameZ="Fast Zombie";break;
-                }
-                jedn=new Character(TP::SZYBKI,NameZ,health, health, 25+(x*1.25), x*1, 0,1,true,0.04,0.05);
-                break;}
-            case 38 ... 59:{
-                health=lok_HP_wrog*pow(1.05,x-1);
-                string NameZ;
-                switch (J){
-                case POLSKI: NameZ="Naladowany Zombie";break;
-                default: NameZ="Charged Zombie";break;
-                }
-                jedn=new Character(TP::NALADOWANY,NameZ,health, health, 25+(x*1.8), x*1, 0,2,false,0.03,0.06);
-                break;}
-            case 60 ... 85:{
-                health=lok_HP_wrog*pow(1.03,x-1);
-                string NameZ;
-                switch (J){
-                case POLSKI: NameZ="Tytanowy Zombie";break;
-                default: NameZ="Titan Zombie";break;
-                }
-                jedn=new Character(TP::TYTANOWY,NameZ,health, health, 50+(x*3.4), x*1.5, 0,3,false,0.02,0.02);
-                break;}
-            case 86 ... 99:{
-                health=lok_HP_wrog*pow(1.05,x-1);
-                string NameZ;
-                switch (J){
-                case POLSKI: NameZ="Toksyczny Zombie";break;
-                default: NameZ="Toxic Zombie";break;
-                }
-                jedn=new Character(TP::TOKSYCZNY,NameZ,health, health, 20+(x*2.1), x*1.5, 0,1,false,0.03,0.04);
-                break;}
-            }
-        break;}
-        default:{
-            switch (losujszablon){
-            case 0 ... 14:
-                health=lok_HP_wrog*pow(1.06,x-1);
-                jedn=new Character(TP::ZWYKLY,"Zombie",health, health, 50 + (x * 4.6), x*0.5, 0,1,false,0.02,0.03);
-                break;
-            case 15 ... 30:{
-                health=lok_HP_wrog*pow(1.06,x-1);
-                string NameZ;
-                switch (J){
-                case POLSKI: NameZ="Szybki Zombie";break;
-                default: NameZ="Fast Zombie";break;
-                }
-                jedn=new Character(TP::SZYBKI,NameZ,health, health, 55 + (x * 3.2), x*0.5, 0,1,true,0.04,0.05);
-                break;}
-            case 31 ... 39:{
-                if (CV) health=lok_HP_wrog*pow(1.1,x-1);
-                string NameZ;
-                switch (J){
-                case POLSKI: NameZ="Zombie Dowodca";break;
-                default: NameZ="Commander Zombie";break;
-                }
-                jedn=new Character(TP::COMMANDER,NameZ,health,health,50+(x*2),x*2,0,2,false,0.02,0.01);
-                break;}
-            case 40 ... 54:{
-                health=lok_HP_wrog*pow(1.1,x-1);
-                string NameZ;
-                switch (J){
-                case POLSKI: NameZ="Naladowany Zombie";break;
-                default: NameZ="Charged Zombie";break;
-                }
-                jedn=new Character(TP::NALADOWANY,NameZ,health, health, 50+(x*2.4), x*1, 0,2,false,0.03,0.06);
-                break;}
-            case 55 ... 64:{
-                double tytanowy_mnoznik=x<20?1.2:(x<30?1.12:1.05);
-                health=static_cast<unsigned int>(lok_HP_wrog*pow(tytanowy_mnoznik,x-1));
-                string NameZ;
-                switch (J){
-                case POLSKI: NameZ="Tytanowy Zombie";break;
-                default: NameZ="Titan Zombie";break;
-                }
-                jedn=new Character(TP::TYTANOWY,NameZ,health, health, 100 + (x * 5), x*1, 0,3,false,0.01,0.02);
-                break;
-            }
-            case 65 ... 75:
-                health=static_cast<unsigned int>(lok_HP_wrog*pow(1.06,x-1));
-                L=Los(4,2);
-                jedn=new Character(TP::EXPLODER,"Zombie Exploder",health, health,9999, x*1.2, 0,1,false,0.05,0,L);
-                break;
-            case 76:case 77:case 78:case 79:case 80:case 81:case 82:case 83:case 84:case 85:case 86:case 87:case 88:case 89:
-            case 90:case 91:case 92:case 93:case 94:case 95:case 96:case 97:case 98:case 99:{
-                health=static_cast<unsigned int>(lok_HP_wrog*pow(1.15,x-1));
-                string NameZ;
-                switch (J){
-                case POLSKI: NameZ="Toksyczny Zombie";break;
-                default: NameZ="Toxic Zombie";break;
-                }
-                jedn=new Character(TP::TOKSYCZNY,"Toksyczny Zombie",health, health, 50 + (x * 3.5), x*1, 0,1,false,0.03,0.05);
-                break;}
-            }
-        break;}
 
+void kiedy_efekt(Gamecontent &Gc,MultiDamageResult &ew, Character &source){
+    bool bylCrit=false;
+    for (DamageResult &dr:ew.Eksplozja){
+        if(dr.krytyczne){
+            Gc.SE.R=ScreenEfekt::CRITICAL;
+            Gc.CzasTrwania=std::ZaWarudo::steady_clock::now()+std::ZaWarudo::milliseconds(2000);
+            bylCrit=true;
         }
-    return jedn;
-}
-int gen_l_wrogow(long x){
-    switch(x){
-    case 1:
-        return 1;
-    case 2:case 3:case 4:case 5:
-        return Los(3,1);
-    case 6:case 7:case 8:case 9:case 10:
-        return Los(3,2);
-    case 11 ... 19:
-        return Los(5,2);
-    default:
-        return Los(5,4);
-        break;
+        else{
+            Gc.SE.R=ScreenEfekt::HIT;
+            Gc.CzasTrwania=std::ZaWarudo::steady_clock::now()+std::ZaWarudo::milliseconds(1000);
+        }
+        if (czyZyje(dr.cel)&&find(Gc.affectedT.begin(),Gc.affectedT.end(),dr.cel)==Gc.affectedT.end()) {Gc.affectedT.push_back(dr.cel);Gc.dane.push_back(dr);}
+        }
+        if (Gc.affectedT.empty()||EverybodyDEAD_NOT_BIG_SUPRISE(Gc.affectedT)){
+            narysujScene(Gc);
+            if(bylCrit) source.skrytowanie();
+        }
+        else {screen(Gc);if(bylCrit) source.skrytowanie();}
+    if(Gc.debug){cout<<endl<<endl;cout<<"Amount of affected enemies: "<<Gc.affectedT.size()<<endl;
+    this_thread::sleep_for(ZaWarudo::seconds(2));}
+    for (auto &dr:ew.Eksplozja){
+        dr.cel=nullptr;
     }
+    ew.Eksplozja.clear();
+    aktualizuj_efekt(Gc);
 }
-void kiedy_crit(Gamecontent &Gc,AttackResult &w,Character &source,Character &cel){
-    if(w.krytyczne){
-        Gc.SE.r=ScreenEfekt::CRITICAL;
-        if (czyZyje(cel)) {Gc.krytT=&cel;narysujScene(Gc);}
-        else screen(Gc);
-        source.skrytowanie();
-        Gc.SE.r = ScreenEfekt::NONE;
-        Gc.krytT=nullptr;
+void tag_sklepu(const string &napis,const string &napis2,const int &cena_przedmiotu,const int &var_przedmiotu){
+    short r=5;
+    if (napis.size()>31) r=4;
+    int miejsce=64-(napis.size()+r+7);
+    string spacje="";
+    while (spacje.size()<miejsce) spacje+=" ";
+    cout<<napis<<setw(r)<<right<<cena_przedmiotu<<"\\ "<<(char)177<<setw(7)<<left<<napis2<<var_przedmiotu<<(char)176<<spacje<<(char)186<<"\n";
+}
+void tagi_akcji(vector<string> Napisy){
+    short numer=1;
+    for (string &N:Napisy){
+        cout<<"\\"<<numer<<"."<<N<<"\\"<<" ";
+        numer++;
     }
-}
-void nowyWrog(Gamecontent &Gc, unsigned int &base_HP_wrog)
-{
-    bool Commandervalid=false;
-    liczba_wrogow=gen_l_wrogow(Gc.x);
-    for (int r=0;r<liczba_wrogow;++r) {
-            unsigned int lok_HP_wrog=base_HP_wrog;
-            Character* jedn=generujZombie(Gc.x,lok_HP_wrog,Commandervalid,Gc.S.Jezyk);
-        if (!jedn) {
-            switch (Gc.S.Jezyk){
-                case POLSKI: cerr<<"BLAD!"<<endl;break;
-                default: cerr<<"ERROR!"<<endl;break;
-            }
-        return;}
-        if (jedn->typ==TP::COMMANDER) Commandervalid=true;
-        Gc.enemies.push_back(jedn);
-        if (debug==true){
-            switch(Gc.S.Jezyk){
-            case POLSKI:
-                cout << "Wrog[" << r << "] utworzony | adres: " <<jedn<<" | HP: " <<jedn->HP<<" | DEF: "<<jedn->DEF<<'\n';
-                break;
-            default:
-                cout << "Created enemy[" << r << "] | address: " <<jedn<<" | HP: " <<jedn->HP<<" | DEF: "<<jedn->DEF<<'\n';
-                break;
-                  }
-                  this_thread::sleep_for(chrono::milliseconds(500));
-        }
+    cout<<"             \n";
+    for (string &N:Napisy){
+        cout<<" ";uzyjUTF8(L'\u203E',N.size()+3);cout<<" ";
     }
-        for (const Character* wrog:Gc.enemies){
-    // Dostosowanie base_HP_wrog do najnizszego HP wroga(jesli jest)
-            if (czyZyje(wrog)&&wrog->HP<base_HP_wrog)
-            {
-                base_HP_wrog=wrog->HP;
-            }
-        }
-        if (Gc.debug==true){
-            switch(Gc.S.Jezyk){
-            case POLSKI:
-            cout<<"Wygenerowano "<<Gc.enemies.size()<<" zombie\n";
-            cout<<"Najnizsze HP:"<< base_HP_wrog<<endl;break;
-            default:
-            cout<<"Generated "<<Gc.enemies.size()<<" zombie\n";
-            cout<<"The lowest HP:"<< base_HP_wrog<<endl;break;
-        }
-            this_thread::sleep_for(chrono::seconds(3));
-        }
+    cout<<"                              "<<endl;
 }
-void noweDzialko(long x,Character* &dzialko, const Language &J)
+void panele(Gamecontent &Gc,Przedmiot &flashbang,Przedmiot &tel, Przedmiot &zatyczki)
 {
-    delete dzialko;
-    dzialko=nullptr;
-    unsigned int min_hp=110+(x*10);
-    unsigned int max_hp=160+(x*25);
-    unsigned int base_HP_dzialko = Los(max_hp,min_hp);
-    string NameS;
-        switch (J){
-        case POLSKI: NameS="Dzialko Straznicze";break;
-        default: NameS="Sentry Gun";break;
-        }
-    dzialko=new Character(TP::DZIALKO,NameS,base_HP_dzialko,base_HP_dzialko,250+2*(x/5),0,0,2);
-}
-
-void nowyZasobnik(long x,Character* &zasobnik,const Language &J)
-{
-    delete zasobnik;
-    zasobnik=nullptr;
-    unsigned int min_hp=80+(x*7);
-    unsigned int max_hp=110+(x*20);
-    long n=base_HP_wrog*pow(1.21,x-1);
-    unsigned int base_HP_zasobnik = Los(max_hp,min_hp);
-    string NameD;
-        switch (J){
-        case POLSKI: NameD="Zasobnik";break;
-        default: NameD="Dispenser";break;
-        }
-    zasobnik=new Character(TP::ZASOBNIK,NameD,base_HP_zasobnik,base_HP_zasobnik,50*(float(x)/4),0,0,3);
-}
-
-void panele(Gamecontent &Gc,Przedmiot ult,Przedmiot ulw,Przedmiot ulm,Przedmiot fajerwerk,Przedmiot tel,Przedmiot zatyczki)
-{
-    if (Gc.kodscreen==20)
+    if (Gc.Wydarzenie==GW::SHOP)
     {
+        Eyelander* miecz=Gc.gracz.znajdz<Eyelander>();
+        WyrzutnikGranatow* SBLauncher=Gc.gracz.znajdz<WyrzutnikGranatow>();
+        Shield* Sh=Gc.gracz.znajdz<Shield>();
         koloruj(15,4);
-        for (int i=0;i<75;i++) cout<<(char)176;
+        for (int i=0;i<76;i++) cout<<(char)176;
         koloruj(15,0);cout<<(char)186<<endl;
         koloruj(15,0);
-    for (int i=0;i<75;i++) cout<<(char)205;
+    for (int i=0;i<76;i++) cout<<(char)205;
     cout<<(char)185<<endl;
-    koloruj(14,6);cout<<"EXP: "<<setw(5)<<Gc.gracz.EXP<<"                                                                 ";koloruj(15,0);cout<<(char)186<<endl;koloruj(15,0);
-    switch (Gc.S.Jezyk){
-    case POLSKI:{
-        koloruj(3,1);cout<<"\\1.Ulepszenie tarczy: "<<setw(5)<<right<<ult.cena<<"\\ "<<(char)177<<setw(7)<<left<<"obecny poziom: "<<ult.quant<<(char)176<<"                            ";koloruj(15,0);cout<<(char)186<<endl;koloruj(15,0);
-        koloruj(8,15);cout<<"\\2.Ulepszenie wyrzutnika: "<<setw(5)<<right<<ulw.cena<<"\\ "<<(char)177<<setw(7)<<left<<"obecny poziom: "<<ulw.quant<<(char)176<<"                        ";koloruj(15,0);cout<<(char)186<<endl;koloruj(15,0);
-        koloruj(4,7);cout<<"\\3.Ulepszenie miecza: "<<setw(5)<<right<<ulm.cena<<"\\ "<<(char)177<<setw(7)<<left<<"obecny poziom: "<<ulm.quant<<(char)176<<"                            ";koloruj(15,0);cout<<(char)186<<endl;koloruj(15,0);
-        koloruj(11,2);cout<<"\\4.Przedmiot: flashbang: "<<setw(5)<<right<<fajerwerk.cena<<"\\ "<<(char)177<<setw(7)<<left<<"obecna ilosc: "<<fajerwerk.quant<<(char)176<<"                          ";koloruj(15,0);cout<<(char)186<<endl;koloruj(15,0);
-        koloruj(9,0);cout<<"\\5.Przedmiot:Pomocna linia u Inzyniera(zuzywa 5 SP): "<<setw(3)<<tel.cena<<"\\ "<<(char)177<<setw(7)<<left<<"obecna ilosc: "<<tel.quant<<(char)176;koloruj(15,0);cout<<(char)186<<endl;koloruj(15,0);
-        if (Gc.x>=15) cout<<"\\6.Przedmiot: Zatyczki do uszu(pasywne): "<<setw(3)<<right<<zatyczki.cena<<"\\ "<<(char)177<<setw(7)<<left<<"obecna ilosc: "<<zatyczki.quant<<(char)176<<"            "<<(char)186<<"\n";
-        break;}
-    default:{
-        koloruj(3,1);cout<<"\\1.Shield upgrade: "<<setw(8)<<right<<ult.cena<<"\\ "<<(char)177<<setw(7)<<left<<"current level: "<<ult.quant<<(char)176<<"                            ";koloruj(15,0);cout<<(char)186<<endl;koloruj(15,0);
-        koloruj(8,15);cout<<"\\2.Sticky Launcher upgrade: "<<setw(3)<<right<<ulw.cena<<"\\ "<<(char)177<<setw(7)<<left<<"current level: "<<ulw.quant<<(char)176<<"                        ";koloruj(15,0);cout<<(char)186<<endl;koloruj(15,0);
-        koloruj(4,7);cout<<"\\3.Sword upgrade: "<<setw(9)<<right<<ulm.cena<<"\\ "<<(char)177<<setw(7)<<left<<"current level: "<<ulm.quant<<(char)176<<"                            ";koloruj(15,0);cout<<(char)186<<endl;koloruj(15,0);
-        koloruj(11,2);cout<<"\\4.Item: flashbang: "<<setw(9)<<right<<fajerwerk.cena<<"\\ "<<(char)177<<setw(7)<<left<<"current quant: "<<fajerwerk.quant<<(char)176<<"                          ";koloruj(15,0);cout<<(char)186<<endl;koloruj(15,0);
-        koloruj(9,0);cout<<"\\5.Item:Telephone to Engineer(costs 5 SP): "<<setw(12)<<tel.cena<<"\\ "<<(char)177<<setw(7)<<left<<"current quant: "<<tel.quant<<(char)176;koloruj(15,0);cout<<(char)186<<endl;koloruj(15,0);
-        if (Gc.x>=15) cout<<"\\6.Item: Earplugs(passive): "<<setw(15)<<right<<zatyczki.cena<<"\\ "<<(char)177<<setw(7)<<left<<"current quant: "<<zatyczki.quant<<(char)176<<"            "<<(char)186<<"\n";
-    break;}
-    }
-    cout<<string(75,(char)205)<<(char)188<<endl;
+    koloruj(14,6);cout<<"EXP: "<<setw(5)<<Gc.gracz.EXP<<"                                                                  ";koloruj(15,0);cout<<(char)186<<endl;koloruj(15,0);
+
+        koloruj(3,1);tag_sklepu(Gc.S.L.get(Tx::Shop_Sh),Gc.S.L.get(Tx::Level_info),Sh->cena,Sh->LVL);koloruj(15,0);
+        koloruj(8,15);tag_sklepu(Gc.S.L.get(Tx::Shop_SBL),Gc.S.L.get(Tx::Level_info),SBLauncher->cena,SBLauncher->LVL);koloruj(15,0);
+        koloruj(4,7);tag_sklepu(Gc.S.L.get(Tx::Shop_Sw),Gc.S.L.get(Tx::Level_info),miecz->cena,miecz->LVL);koloruj(15,0);
+        koloruj(11,2);tag_sklepu(Gc.S.L.get(Tx::Shop_Fl),Gc.S.L.get(Tx::Quantity_info),flashbang.cena,flashbang.quant);koloruj(15,0);
+        koloruj(9,0);tag_sklepu(Gc.S.L.get(Tx::Shop_Phone),Gc.S.L.get(Tx::Quantity_info),tel.cena,tel.quant);koloruj(15,0);
+        if (Gc.x>=15) tag_sklepu(Gc.S.L.get(Tx::Shop_Ear),Gc.S.L.get(Tx::Quantity_info),zatyczki.cena,zatyczki.quant);
+
+    cout<<string(76,(char)205)<<(char)188<<endl;
     cout<<endl;
-    switch(Gc.S.Jezyk){
-        case POLSKI: cout<<"\\Wcisnij X, kiedy bedziesz gotowy\\"<<endl;
-        default: cout<<"\\Press X, when you are ready\\"<<endl;
+    cout<<Gc.S.L.get(Tx::X_for_continue2)<<endl;
+    cout<<endl;
     }
-    cout<<endl;}
     else
     {
         for (const auto& efekt:Gc.gracz.efekty){
@@ -465,73 +193,46 @@ void panele(Gamecontent &Gc,Przedmiot ult,Przedmiot ulw,Przedmiot ulm,Przedmiot 
         }
         cout<<endl;
         cout<<string(64,char(196))<<endl;
-        switch(Gc.S.Jezyk){
-        case POLSKI:{
-            cout<<"\\1. OFENSYWA\\"<<" "<<"\\2. SPECJALNE\\"<<" "<<"\\3. PRZEDMIOTY\\ \n";
-            cout<<" ";uzyjUTF8(L'\u203E',12);cout<<"  ";uzyjUTF8(L'\u203E',13);cout<<"  ";uzyjUTF8(L'\u203E',14);cout<<endl;
-            break;}
-        default:
-            cout<<"\\1. OFFENSIVE\\"<<" "<<"\\2. SPECIAL\\"<<" "<<"\\3. ITEMS\\ \n";
-            cout<<" ";uzyjUTF8(L'\u203E',13);cout<<"  ";uzyjUTF8(L'\u203E',11);cout<<"  ";uzyjUTF8(L'\u203E',9);cout<<endl;
-            break;}
-        }
+
+    tagi_akcji({Gc.S.L.get(Tx::Action_info_offensive),Gc.S.L.get(Tx::Action_info_support),Gc.S.L.get(Tx::Action_info_equipment)});
+    }
 }
 void ofensywa_wybrana(Gamecontent &Gc)
 {
     narysujScene(Gc);
     cout<<endl;
     cout<<string(64,char(196))<<endl;
-    switch(Gc.S.Jezyk){
-    case POLSKI:{
-        cout<<"\\1. Miecz\\"<<' '<<"\\2. Wyrzutnik granatow samoprzylepnych\\"<<' '<<"\\3.ATAK SPECJALNY (zuzywa 15 SP)\\ \n";
-        cout<<" ";uzyjUTF8(L'\u203E',9);cout<<"  ";uzyjUTF8(L'\u203E',38);cout<<"  ";uzyjUTF8(L'\u203E',32);cout<<endl;
-        break;}
-    default:{
-        cout<<"\\1. Sword\\"<<' '<<"\\2. Sticky Bomb Launcher\\"<<' '<<"\\3.SPECIAL ATTACK (zuzywa 15 SP)\\ \n";
-        cout<<" ";uzyjUTF8(L'\u203E',9);cout<<"  ";uzyjUTF8(L'\u203E',25);cout<<"  ";uzyjUTF8(L'\u203E',32);cout<<endl;
-        break;}
-    }
+    cout<<"                                                             \n";
+    cout<<"                                                             \n";
+    narysujScene(Gc);
+    cout<<endl;
+    cout<<string(64,char(196))<<endl;
+        tagi_akcji({Gc.S.L.get(Tx::Demo_actions_offensive_Sword),Gc.S.L.get(Tx::Demo_actions_offensive_SBL),Gc.S.L.get(Tx::Demo_actions_offensive_specialAttack)});
 }
 void wsparcie_wybrane(Gamecontent &Gc)
 {
     narysujScene(Gc);
     cout<<endl;
     cout<<string(64,char(196))<<endl;
-    switch(Gc.S.Jezyk){
-    case POLSKI:{
-        cout<<"\\1. Gorzalka\\"<<"  "<<"\\2. Tarcza\\                                                            \n";
-        cout<<" ";uzyjUTF8(L'\u203E',12);cout<<"   ";uzyjUTF8(L'\u203E',10);cout<<"                                   "<<endl;
-        break;}
-    default:{
-        cout<<"\\1. Scrumpy\\"<<"  "<<"\\2. Shield\\                                                            \n";
-        cout<<" ";uzyjUTF8(L'\u203E',11);cout<<"   ";uzyjUTF8(L'\u203E',10);cout<<"                                   "<<endl;
-        break;}
-    }
+    cout<<"                                                             \n";
+    cout<<"                                                             \n";
+    narysujScene(Gc);
+    cout<<endl;
+    cout<<string(64,char(196))<<endl;
+    tagi_akcji({Gc.S.L.get(Tx::Demo_actions_support_Scrumpy),Gc.S.L.get(Tx::Demo_actions_support_Shield)});
 }
-void przedmioty_wybrane(Gamecontent &Gc,Przedmiot fajerwerk,Przedmiot tel,Przedmiot zatyczki)
+void przedmioty_wybrane(Gamecontent &Gc, const Przedmiot &flashbang,const Przedmiot &tel,const Przedmiot &zatyczki)
 {
     narysujScene(Gc);
     cout<<endl;
     cout<<string(64,char(196))<<endl;
     //wyswietlanie ekwipunku
-    switch(Gc.S.Jezyk){
-    case POLSKI:{
-        cout<<"\\1. "<<fajerwerk.nazwa<<"(Ilosc: " <<fajerwerk.quant<< ")\\                                          "<<endl;
-        if (tel.quant!=0)
-            cout<<"\\2. "<<tel.nazwa<<" (zuzywa 5 SP)\\"<<endl;
-        if (zatyczki.quant!=0)
-            cout<<"ZATYCZKI (PASYWNE)"<<endl;
-        cout<<"X - wyjscie                                         \n";
-        break;}
-    default:{
-        cout<<"\\1. "<<fajerwerk.nazwa<<"(quant: " <<fajerwerk.quant<< ")\\                                          "<<endl;
-        if (tel.quant!=0)
-            cout<<"\\2. "<<tel.nazwa<<" (costs 5 SP)\\"<<endl;
-        if (zatyczki.quant!=0)
-            cout<<"EARPLUGS (PASSIVE)"<<endl;
-        cout<<"X - exit                                            \n";
-        break;}
-    }
+    cout<<"\\1. "<<flashbang.nazwa<<"("<<Gc.S.L.get(Tx::Quantity)<<": " <<flashbang.quant<< ")\\                                          "<<endl;
+    if (tel.quant!=0)
+        cout<<"\\2. "<<tel.nazwa<<" ("<<Gc.S.L.get(Tx::Cost_info)<<"5 SP)\\"<<endl;
+    if (zatyczki.quant!=0)
+        cout<<zatyczki.nazwa<<" (PASSIVE)"<<endl;
+    cout<<Gc.S.L.get(Tx::X_for_exit)<<"                                         \n";
 }
 bool wybor=false;
 bool EverybodyDEAD_NOT_BIG_SUPRISE(const vector<Character*>& enemies){
@@ -546,7 +247,7 @@ short target(Gamecontent &Gc)
 {
     screen(Gc);
     char cel;
-    wybor=true;
+    Gc.wybor=true;
     bool validchoice3=false;
     int proby = Gc.enemies.size();
     while (proby-- > 0&&(!czyZyje(Gc.enemies[Gc.wskazany-1]))) {
@@ -555,8 +256,8 @@ short target(Gamecontent &Gc)
     }
     if(EverybodyDEAD_NOT_BIG_SUPRISE(Gc.enemies)){
             dzwiek("Audio_RPG\\Kiedy_wszyscy_martwi_w_target.wav");
-            cerr<<"Wszyscy wrogowie martwi sa martwi, nie ma kogo zabijac...\n";
-            this_thread::sleep_for(chrono::seconds(3));
+            cerr<<Gc.S.L.get(Tx::EachAndEveryoneWillBeSentHomeToYourMommaInABox)<<endl;
+            this_thread::sleep_for(ZaWarudo::seconds(3));
         }
         while (validchoice3==false)
         {
@@ -564,10 +265,7 @@ short target(Gamecontent &Gc)
             narysujScene(Gc);
             cout<<endl;
             cout<<string(64,char(196))<<endl;
-            switch(Gc.S.Jezyk){
-            case POLSKI: cout<<"Zombie otagowane od lewej do prawej!           \n";break;
-            default: cout<<"Zombies are tagged from left to right!             \n";break;
-            }
+            cout<<Gc.S.L.get(Tx::Tag_direction_Info)<<endl;
             for (size_t i = 0; i < Gc.enemies.size(); ++i) {
                 if (Gc.enemies[i]&&Gc.enemies[i]->HP > 0) {
                     if ((int)i+1==Gc.wskazany) {
@@ -577,33 +275,40 @@ short target(Gamecontent &Gc)
                     koloruj(7,0);
                 }
             }
-            cout<<"DEBUG:   wskazany="<<wskazany<<"      liczba wrogow="<<Gc.enemies.size();
+            cout<<"DEBUG:   wskazany="<<Gc.wskazany<<"      liczba wrogow="<<Gc.enemies.size();
             cel=_getch();
                 switch (cel)
                 {
                 case 'w':
                     do{
-                    wskazany--;
-                    if (wskazany<1) wskazany=Gc.enemies.size();
-                    }while (!czyZyje(Gc.enemies[wskazany-1]));
+                    Gc.wskazany--;
+                    if (Gc.wskazany<1) Gc.wskazany=Gc.enemies.size();
+                    }while (!czyZyje(Gc.enemies[Gc.wskazany-1]));
                     break;
                 case 's':
                     do{
-                        wskazany++;
-                        if (wskazany>Gc.enemies.size()) wskazany=1;
-                    }while (!czyZyje(Gc.enemies[wskazany-1]));
+                        Gc.wskazany++;
+                        if (Gc.wskazany>Gc.enemies.size()) Gc.wskazany=1;
+                    }while (!czyZyje(Gc.enemies[Gc.wskazany-1]));
                     break;
                 case 13:
                         validchoice3=true;
                         break;
                 }
         }
-        wybor=false;
+        Gc.wybor=false;
         screen(Gc);
-        return wskazany;
+        return Gc.wskazany;
 }
-void sklep_input(Gamecontent &Gc,short &tarcza, short &WATK, short &MATK, Przedmiot &ult,Przedmiot &ulw,Przedmiot &ulm,Przedmiot &fajerwerk,Przedmiot &tel,Przedmiot &zatyczki)
+void sklep_input(Gamecontent &Gc,Przedmiot &flashbang,Przedmiot &tel,Przedmiot &zatyczki)
 {
+    Shield* Sh=Gc.gracz.znajdz<Shield>();
+    WyrzutnikGranatow* SBLauncher=Gc.gracz.znajdz<WyrzutnikGranatow>();
+    Eyelander* miecz=Gc.gracz.znajdz<Eyelander>();
+    if(!Sh||!SBLauncher||!miecz){
+        cerr<<Gc.S.L.get(Tx::Error_info)<<endl;
+        exit(0);
+    }
     char choice2;
     bool validchoice2=false;
     while(validchoice2==false)
@@ -613,195 +318,141 @@ void sklep_input(Gamecontent &Gc,short &tarcza, short &WATK, short &MATK, Przedm
         {
         case '1': //upgrade tarczy
             {   screen(Gc);
-                panele(Gc,ult,ulw,ulm,fajerwerk,tel,zatyczki);
-            if (Gc.gracz.EXP<ult.cena) { koloruj (12,0);
-                        switch(Gc.S.Jezyk){
-                            case POLSKI: cout<<"Nie masz odpowiedniej ilosci exp!"<<endl;break;
-                            case ANGIELSKI: cout<<"You don't have enough exp!"<<endl;break;
-                            default: cout<<"NEVER GONNA GIVE YOU UP"<<endl;break;//easter egg
-                        }
-                        koloruj (15,0);
-                }
-            else if(ult.quant>3)//odpowiednia ilosc exp
+                panele(Gc,flashbang,tel,zatyczki);
+            if (Gc.gracz.EXP<Sh->cena) { koloruj (12,0);
+                cout<<Gc.S.L.get(Tx::Error_noFunds)<<endl;
+                koloruj (15,0);
+            }
+            else if(Sh->LVL>3)//odpowiednia ilosc exp
             { //limit
                 koloruj (12,0);
-                switch (Gc.S.Jezyk){
-                    case POLSKI: cout<<"Twoja tarcza jest maksymalnie ulepszona!\n";break;
-                    default: cout<<"Your shield is already upgraded to the max level!\n";break;
-                }
+                cout<<Gc.S.L.get(Tx::Error_maxLevel)<<endl;
                 koloruj(15,0);
             }
             else
             {
                 koloruj (10,0);
-                switch(Gc.S.Jezyk){
-                        case POLSKI: cout<<"Kupiles "<<ult.nazwa<<endl;break;
-                        default: cout<<"You bought "<<ult.nazwa<<endl;break;
-                        }
+                cout<<Gc.S.L.get(Tx::Bought_Item)<<"upgrade to "<<Sh->nazwa<<endl;
                 koloruj (15,0);
-                Gc.gracz.EXP-=ult.cena;
-                ult.cena*=3.2;
-                tarcza+=ult.quant;
-                ult.quant++;
-                this_thread::sleep_for(chrono::seconds(1));
+                Gc.gracz.EXP-=Sh->cena;
+                Sh->cena*=3.2;
+                Sh->ulepsz();
+                this_thread::sleep_for(ZaWarudo::seconds(1));
                 screen(Gc);
-                panele(Gc,ult,ulw,ulm,fajerwerk,tel,zatyczki);
+                panele(Gc,flashbang,tel,zatyczki);
                 validchoice2=true;
             }
             break;}
         case '2': //upgrade wyrzutnika
             {   screen(Gc);
-                panele(Gc,ult,ulw,ulm,fajerwerk,tel,zatyczki);
-                if(Gc.gracz.EXP<ulw.cena) { koloruj (12,0);
-                        switch(Gc.S.Jezyk){
-                            case POLSKI: cout<<"Nie masz odpowiedniej ilosci exp!"<<endl;break;
-                            case ANGIELSKI: cout<<"You don't have enough exp!"<<endl;break;
-                            default: cout<<"NEVER GONNA LET YOU DOWN"<<endl;break;//easter egg
-                        }
+                panele(Gc,flashbang,tel,zatyczki);
+                if(Gc.gracz.EXP<SBLauncher->cena) { koloruj (12,0);
+                        cout<<Gc.S.L.get(Tx::Error_noFunds)<<endl;
                         koloruj (15,0);
                 }
                 else
                 {
                     koloruj (10,0);
-                    switch(Gc.S.Jezyk){
-                        case POLSKI: cout<<"Kupiles "<<ulw.nazwa<<endl;break;
-                        default: cout<<"You bought "<<ulw.nazwa<<endl;break;
-                        }
+                    cout<<Gc.S.L.get(Tx::Bought_Item)<<"upgrade to "<<SBLauncher->nazwa<<endl;
                     koloruj (15,0);
-                    Gc.gracz.EXP-=ulw.cena;
-                    ulw.cena*=3;
-                    WATK+=2.1*ulw.quant;
-                    ulw.quant++;
-                    this_thread::sleep_for(chrono::seconds(1));
+                    Gc.gracz.EXP-=SBLauncher->cena;
+                    SBLauncher->cena*=3;
+                    SBLauncher->ulepsz();
+                    this_thread::sleep_for(ZaWarudo::seconds(1));
                     screen(Gc);
-                    panele(Gc,ult,ulw,ulm,fajerwerk,tel,zatyczki);
+                    panele(Gc,flashbang,tel,zatyczki);
                     validchoice2=true;
                 }
             break;}
         case '3': //upgrade miecza
             {   screen(Gc);
-                panele(Gc,ult,ulw,ulm,fajerwerk,tel,zatyczki);
-                if(Gc.gracz.EXP<ulm.cena) { koloruj (12,0);
-                        switch(Gc.S.Jezyk){
-                            case POLSKI: cout<<"Nie masz odpowiedniej ilosci exp!"<<endl;break;
-                            case ANGIELSKI: cout<<"You don't have enough exp!"<<endl;break;
-                            default: cout<<"NEVER GONNA RUN AROUND AND DESERT YOU"<<endl;break;//easter egg
-                        }
+                panele(Gc,flashbang,tel,zatyczki);
+                if(Gc.gracz.EXP<miecz->cena) { koloruj (12,0);
+                        cout<<Gc.S.L.get(Tx::Error_noFunds)<<endl;
                         koloruj (15,0);
                 }
                 else
                 {
                     koloruj (10,0);
-                    switch(Gc.S.Jezyk){
-                        case POLSKI: cout<<"Kupiles "<<ulm.nazwa<<endl;break;
-                        default: cout<<"You bought "<<ulm.nazwa<<endl;break;
-                        }
+                    cout<<Gc.S.L.get(Tx::Bought_Item)<<"upgrade to "<<miecz->nazwa<<endl;
                     koloruj (15,0);
-                    Gc.gracz.EXP-=ulm.cena;
-                    ulm.cena*=2.5;
-                    MATK+=105;
-                    ulm.quant++;
-                    this_thread::sleep_for(chrono::seconds(1));
+                    Gc.gracz.EXP-=miecz->cena;
+                    miecz->cena*=2.5;
+                    miecz->ulepsz();
+                    this_thread::sleep_for(ZaWarudo::seconds(1));
                     screen(Gc);
-                    panele(Gc,ult,ulw,ulm,fajerwerk,tel,zatyczki);
+                    panele(Gc,flashbang,tel,zatyczki);
                     validchoice2=true;
                 }
             break;}
         case '4': //kupno przedmiotu
             {
                 screen(Gc);
-                panele(Gc,ult,ulw,ulm,fajerwerk,tel,zatyczki);
-                if(Gc.gracz.EXP<fajerwerk.cena) { koloruj (12,0);
-                        switch(Gc.S.Jezyk){
-                            case POLSKI: cout<<"Nie masz odpowiedniej ilosci exp!"<<endl;break;
-                            case ANGIELSKI: cout<<"You don't have enough exp!"<<endl;break;
-                            default: cout<<"NEVER GONNA MAKE YOU CRY"<<endl;break;//easter egg
-                        }
+                panele(Gc,flashbang,tel,zatyczki);
+                if(Gc.gracz.EXP<flashbang.cena) { koloruj (12,0);
+                        cout<<Gc.S.L.get(Tx::Error_noFunds)<<endl;
                         koloruj (15,0);
                 }
                 else
                 {
                     koloruj (10,0);
-                    switch(Gc.S.Jezyk){
-                        case POLSKI: cout<<"Kupiles "<<fajerwerk.nazwa<<"x 1"<<endl;break;
-                        default: cout<<"You bought "<<fajerwerk.nazwa<<"x 1"<<endl;break;
-                        }
+                    cout<<Gc.S.L.get(Tx::Bought_Item)<<flashbang.nazwa<<endl;
                     koloruj (15,0);
-                    Gc.gracz.EXP-=fajerwerk.cena;
-                    fajerwerk.cena+=25;
-                    fajerwerk.quant++;
-                    this_thread::sleep_for(chrono::seconds(1));
+                    Gc.gracz.EXP-=flashbang.cena;
+                    flashbang.cena+=25;
+                    flashbang.quant++;
+                    this_thread::sleep_for(ZaWarudo::seconds(1));
                     screen(Gc);
-                    panele(Gc,ult,ulw,ulm,fajerwerk,tel,zatyczki);
+                    panele(Gc,flashbang,tel,zatyczki);
                     validchoice2=true;
                 }
             break;}
         case '5': //kupno telefonu
             {
                 screen(Gc);
-                panele(Gc,ult,ulw,ulm,fajerwerk,tel,zatyczki);
+                panele(Gc,flashbang,tel,zatyczki);
                 if(Gc.gracz.EXP<tel.cena) { koloruj (12,0);
-                        switch(Gc.S.Jezyk){
-                            case POLSKI: cout<<"Nie masz odpowiedniej ilosci exp!"<<endl;break;
-                            case ANGIELSKI: cout<<"You don't have enough exp!"<<endl;break;
-                            default: cout<<"NEVER GONNA SAY GOODBYE"<<endl;break;//easter egg
-                        }
+                        cout<<Gc.S.L.get(Tx::Error_noFunds)<<endl;
                         koloruj (15,0);
                 }
                 else if(tel.quant!=0) {koloruj (12,0);
-                switch (Gc.S.Jezyk){
-                    case POLSKI: cout<<"Juz masz ten przedmiot!\n";break;
-                    default: cout<<"You have already bought this item!\n";break;
-                }
+                cout<<Gc.S.L.get(Tx::Error_AlreadyHaveIt)<<endl;
                 koloruj (15,0);}
                 else
                 {
                     koloruj (10,0);
-                    switch(Gc.S.Jezyk){
-                        case POLSKI: cout<<"Kupiles "<<tel.nazwa<<endl;break;
-                        default: cout<<"You bought "<<tel.nazwa<<endl;break;
-                        }
+                    cout<<Gc.S.L.get(Tx::Bought_Item)<<tel.nazwa<<endl;
                     koloruj (15,0);
                     Gc.gracz.EXP-=tel.cena;
                     tel.quant++;
-                    this_thread::sleep_for(chrono::seconds(1));
+                    this_thread::sleep_for(ZaWarudo::seconds(1));
                     screen(Gc);
-                    panele(Gc,ult,ulw,ulm,fajerwerk,tel,zatyczki);
+                    panele(Gc,flashbang,tel,zatyczki);
                     validchoice2=true;
                 }
             break;}
         case '6': //kupno zatyczek
             {
-                if (Gc.x<15) cout<<"Nope";
+                if (Gc.x<15) cout<<Gc.S.L.get(Tx::Error_nope_tf2reference);
                 else{
                     screen(Gc);
-                    panele(Gc,ult,ulw,ulm,fajerwerk,tel,zatyczki);
+                    panele(Gc,flashbang,tel,zatyczki);
                     if(Gc.gracz.EXP<zatyczki.cena) { koloruj (12,0);
-                        switch(Gc.S.Jezyk){
-                            case POLSKI: cout<<"Nie masz odpowiedniej ilosci exp!"<<endl;break;
-                            case ANGIELSKI: cout<<"You don't have enough exp!"<<endl;break;
-                            default: cout<<"NEVER GONNA TELL A LIE AND HURT YOU"<<endl;break;//easter egg
-                        }
+                        cout<<Gc.S.L.get(Tx::Error_noFunds)<<endl;
                         koloruj (15,0);
                 }
                     else if(zatyczki.quant!=0) {koloruj (12,0);
-                    switch (Gc.S.Jezyk){
-                        case POLSKI: cout<<"Juz masz ten przedmiot!\n";break;
-                        default: cout<<"You have already bought this item!\n";break;
-                    }
+                    cout<<Gc.S.L.get(Tx::Error_AlreadyHaveIt)<<endl;
                     koloruj (15,0);}
                     else{
                         koloruj (10,0);
-                        switch(Gc.S.Jezyk){
-                        case POLSKI: cout<<"Kupiles "<<zatyczki.nazwa<<endl;break;
-                        default: cout<<"You bought "<<zatyczki.nazwa<<endl;break;
-                        }
+                        cout<<Gc.S.L.get(Tx::Bought_Item)<<zatyczki.nazwa<<endl;
                         koloruj (15,0);
                         Gc.gracz.EXP-=zatyczki.cena;
                         zatyczki.quant++;
-                        this_thread::sleep_for(chrono::seconds(1));
+                        this_thread::sleep_for(ZaWarudo::seconds(1));
                         screen(Gc);
-                        panele(Gc,ult,ulw,ulm,fajerwerk,tel,zatyczki);
+                        panele(Gc,flashbang,tel,zatyczki);
                         validchoice2=true;
                     }
                 }
@@ -813,22 +464,13 @@ void sklep_input(Gamecontent &Gc,short &tarcza, short &WATK, short &MATK, Przedm
                 do
                 {system("cls");
                 koloruj(11,8);
-                switch(Gc.S.Jezyk){
-                case POLSKI:cout<<"Na pewno chcesz wyjsc? (Y/N) ";break;
-                case ANGIELSKI: cout<<"Are you sure you want to leave? (Y/N) ";break;
-                default: "(Y/N)?";break;
-                }
+                cout<<Gc.S.L.get(Tx::DoYouWantToQuit)<<endl;
                 koloruj(7,0);
                 choice2=_getch();
                 if(choice2=='y')
                 {
                     dzwiek("Audio_RPG\\menu_selecting.wav");
-                if (czyZyje(Gc.dzialko))
-                    Gc.kodscreen=6;
-                else if (czyZyje(Gc.zasobnik))
-                    Gc.kodscreen=12;
-                else
-                    Gc.kodscreen=0;//powrot do gry
+                Gc.Wydarzenie=GW::NONE;
                 validchoice2=true;
                 continue;
                 }
@@ -836,50 +478,37 @@ void sklep_input(Gamecontent &Gc,short &tarcza, short &WATK, short &MATK, Przedm
                 {
                     dzwiek("Audio_RPG\\menu_selecting.wav");
                     screen(Gc);
-                    panele(Gc,ult,ulw,ulm,fajerwerk,tel,zatyczki);
+                    panele(Gc,flashbang,tel,zatyczki);
                     dzwiek_loop("Audio_RPG\\Upgradestation_loop.wav");
                     validchoice2=true;
                 }
-                else cout<<"NOPE";
+                else cout<<Gc.S.L.get(Tx::Error_nope_tf2reference);
                 }while (choice2!='y'&&choice2!='n');
                 break;
             }
         default:
-            cout<<"Nope";
+            cout<<Gc.S.L.get(Tx::Error_nope_tf2reference);
             break;
     }
 }
 }
 Character* dajCel(int numer,const vector<Character*>& enemies) {
-    if(numer>=1&&numer<=enemies.size())
+    if(numer>=1&&numer<=enemies.size()){
         return enemies[numer-1];
+    }
     return nullptr;
 }
-void SprawdzZIndeksem(Character* &C, const vector<Character*>& enemies,int &wskazany){
-    for (int r=0;r<enemies.size();r++){
-        if (enemies[r]==C&&czyZyje(C)){
-            wskazany==r+1;
-        }
-    }
-}
+
 short Barka_status=0;
-void AkcjaMiecz(Gamecontent &Gc,Character* &cel){
+void AkcjaMiecz(Gamecontent &Gc,Character* &cel,Eyelander* &miecz){
         dzwiek_ciagly("Audio_RPG\\menu_selecting.wav");
-        Gc.gracz.ATK=MATK;
-        Gc.kodscreen=2;
-        if (czyZyje(Gc.dzialko))
-            Gc.kodscreen+=6;
-        else if (czyZyje(Gc.zasobnik))
-            Gc.kodscreen+=12;
+        Gc.gracz.ObecnaAkcja=AK::ACTION1;
         narysujScene(Gc);
         koloruj(11,8);
-        switch(Gc.S.Jezyk){
-            case POLSKI: cout<<"Uzywasz Eyelander'a                                     "<<endl;break;
-            default:  cout<<"You pulled out the Eyelander                                     "<<endl;
-        }
+        cout<<Gc.S.L.get(Tx::Used_info_Sword)<<"             "<<endl;
         koloruj(7,0);
         dzwiek_ciagly("Audio_RPG\\miecz_wyciagniecie.wav");
-        this_thread::sleep_for(chrono::seconds(1));
+        this_thread::sleep_for(ZaWarudo::seconds(1));
         if(czy_pudlo(Gc.gracz.missrate)){
             Gc.gracz.spudlowanie();
             return;
@@ -887,33 +516,30 @@ void AkcjaMiecz(Gamecontent &Gc,Character* &cel){
         Gc.smigniecie=true;
         narysujScene(Gc);
         dzwiek("Audio_RPG\\miecz_machniecie.wav");
-        this_thread::sleep_for(chrono::milliseconds(400));
+        this_thread::sleep_for(ZaWarudo::milliseconds(400));
         if (cel->typ==TP::TYTANOWY){
             dzwiek("Audio_RPG\\Saxxy_impact.wav");
-            switch(Gc.S.Jezyk){
-                case POLSKI: cout<<"... Miecz nawet nie drasnal Tytanowego Zombie!!!    \n";break;
-                default:  cout<<"... The sword didn't even leave a mark on Titan Zombie!!!         "<<endl;break;
-            }
-            this_thread::sleep_for(chrono::seconds(2));
+            cout<<Gc.S.L.get(Tx::Sword_resistance)<<endl;
+            this_thread::sleep_for(ZaWarudo::seconds(2));
             Gc.smigniecie=false;
             }
             else{
-            cel->PainReact();
-            int obrazenia=Gc.gracz.ATK+120;
-            AttackResult w=Gc.gracz.damage(*cel,obrazenia);//atak bezposredni, raz sie odbywa
-            kiedy_crit(Gc,w,Gc.gracz,*cel);
+            DamageResult w=miecz->uzyj(Gc.gracz,*cel);//atak bezposredni, raz sie odbywa
+            MultiDamageResult TempMDR=nowyMDR({w});
+            if(Gc.debug){
+                 koloruj(7,0);
+                cout<<"DAMAGERESULT: | adress:"<<w.cel<<" bitesthedust:"<<w.bitesthedust<<" | IsCritical: "<<w.krytyczne<<" | damage: "<<w.obrazenia<<endl;
+                this_thread::sleep_for(ZaWarudo::seconds(2));
+            }
                 if (!w.bitesthedust) //kontrola
                 {
-                    Gc.kodscreen=0;
-                    if (czyZyje(Gc.dzialko))
-                        Gc.kodscreen+=6;
-                    else if (czyZyje(Gc.zasobnik))
-                        Gc.kodscreen+=12;
+                    Gc.gracz.ObecnaAkcja=AK::NO_ACTION;
                     Gc.smigniecie=false;
-                    screen(Gc);
+                kiedy_efekt(Gc,TempMDR,Gc.gracz);
                 }
                 else
                 {
+                    Gc.wybor=false;
                     glowy++;
                     if(glowy>=12) {
                         Gc.gracz.base_HP=2137; //wspomnienie Jana Pawla II
@@ -921,7 +547,7 @@ void AkcjaMiecz(Gamecontent &Gc,Character* &cel){
                         Gc.gracz.heal(Gc.gracz,333);
                         if(Barka_status==1){
                             dzwiek_ciagly("Audio_RPG\\bip_bip.wav");
-                            this_thread::sleep_for(chrono::milliseconds(1500));
+                            this_thread::sleep_for(ZaWarudo::milliseconds(1500));
                             Barka(Gc);
                             Gc.gracz.SP+=10;
                             screen(Gc);
@@ -935,272 +561,219 @@ void AkcjaMiecz(Gamecontent &Gc,Character* &cel){
                         Gc.gracz.SP+=(cel->SP)/2;
                     default: break;
                 }
-                Gc.kodscreen=0;
-                if (czyZyje(Gc.dzialko)) Gc.kodscreen+=6;
-                else if (czyZyje(Gc.zasobnik)) Gc.kodscreen+=12;
+                Gc.gracz.ObecnaAkcja=AK::NO_ACTION;
                 Gc.smigniecie=false;
                 screen(Gc);
                 koloruj(11,8);
-                switch(Gc.S.Jezyk){
-                    case POLSKI: cout<<"Za uzycie miecza zyskujesz wiekszy max HP!"<<endl;break;
-                    default:  cout<<"Thanks to sword you gain more max HP!"<<endl;break;
-                }
+                cout<<Gc.S.L.get(Tx::Sword_info_heads)<<endl;
                 koloruj(7,0);
-                this_thread::sleep_for(chrono::milliseconds(1500));
+                this_thread::sleep_for(ZaWarudo::milliseconds(1500));
                 narysujScene(Gc);
             }
-            if (EverybodyDEAD_NOT_BIG_SUPRISE(Gc.enemies)){
-            Gc.kodscreen=1;
-            if (czyZyje(Gc.dzialko)) Gc.kodscreen+=6;
-            else if (czyZyje(Gc.zasobnik)) Gc.kodscreen+=12;
-        }
-        this_thread::sleep_for(chrono::seconds(1));
+        this_thread::sleep_for(ZaWarudo::seconds(1));
     }
-    Gc.gracz.ATK=20;
 }
-void AkcjaGranatySamoprzylepne(Gamecontent &Gc,Character* &cel){
-            dzwiek("Audio_RPG\\menu_selecting.wav");
-                        Gc.gracz.ATK=WATK;
-                        unsigned int iloscGranatow=Los(5,1);
-                        Gc.kodscreen=3;
-                        if (czyZyje(Gc.dzialko)) Gc.kodscreen+=6;
-                        else if (czyZyje(Gc.zasobnik))Gc.kodscreen+=12;
-                        narysujScene(Gc);
-                        koloruj(11,8);
-                        switch(Gc.S.Jezyk){
-                            case POLSKI:cout<<"Wystrzelone granaty: "<<iloscGranatow<<endl;break;
-                            default: cout<<"Amount of bombs: "<<iloscGranatow<<endl;break;
-                        }
+void AkcjaGranatySamoprzylepne(Gamecontent &Gc,Character* &Cel,WyrzutnikGranatow* &SBLauncher){
+    dzwiek("Audio_RPG\\menu_selecting.wav");
+    unsigned int iloscGranatow=Los(5,1);
+    Gc.gracz.ObecnaAkcja=AK::ACTION2;
+    narysujScene(Gc);
+    koloruj(11,8);
+    cout<<Gc.S.L.get(Tx::SBL_bomb_info)<<iloscGranatow<<endl;
+    koloruj(7,0);
+    dzwiek_ciagly("Audio_RPG\\bomba_przeladowanie.wav");
+    for (unsigned int i=0;i<iloscGranatow;i++)
+    {
+        if(czy_pudlo(Gc.gracz.missrate)){
+            narysujScene(Gc);
+            koloruj(11,8);
+            cout<<Gc.S.L.get(Tx::SBL_bomb_info)<<iloscGranatow<<endl;cout<<Gc.S.L.get(Tx::Obj_Miss2)<<endl;
+            koloruj(7,0);
+            dzwiek("Audio_RPG\\Banana_slip.wav");
+            this_thread::sleep_for(ZaWarudo::milliseconds(500));
+        }
+        else{
+            unique_ptr<StickyBomb> wyrzut=SBLauncher->wystrzel(Gc.gracz,*Cel);
+            StickyBomb* wWyrzutu=wyrzut.get();
+            if(wWyrzutu->krytyczna) dzwiek("Audio_RPG\\StickyBomb_wyrzut_kryt.wav");
+            else dzwiek("Audio_RPG\\StickyBomb_wyrzut.wav");
+            Gc.Obiekty.push_back(move(wyrzut));
+            narysujScene(Gc);
+            koloruj(11,8);
+            cout<<Gc.S.L.get(Tx::SBL_bomb_info)<<iloscGranatow<<endl<<endl;
+            koloruj(7,0);
+            this_thread::sleep_for(ZaWarudo::milliseconds(500));
+        }
+    }
+    int i2=0;
+    vector<StickyBomb*> Bomby=znajdzbombyWlasciciela(Gc.Obiekty,&Gc.gracz);
+                for (StickyBomb* &B:Bomby){
+                    if(Gc.debug){
                         koloruj(7,0);
-                        dzwiek_ciagly("Audio_RPG\\bomba_przeladowanie.wav");
-                        for (unsigned int i=1;i<=iloscGranatow;i++)
-                        {
-                            if(czy_pudlo(Gc.gracz.missrate)){
-                            narysujScene(Gc);
-                            koloruj(11,8);
-                            switch(Gc.S.Jezyk){
-                                case POLSKI:cout<<"Wystrzelone granaty: "<<iloscGranatow<<endl;cout<<"Pudlo!\n";break;
-                                default: cout<<"Amount of bombs: "<<iloscGranatow<<endl;cout<<"Miss!\n";break;
-                            }
-                            koloruj(7,0);
-                            dzwiek("Audio_RPG\\Banana_slip.wav");
-                            this_thread::sleep_for(chrono::milliseconds(500));
-                            }
-                            else{
-                            Gc.e++;
-                            narysujScene(Gc);
-                            koloruj(11,8);
-                            switch(Gc.S.Jezyk){
-                                case POLSKI:cout<<"Wystrzelone granaty: "<<iloscGranatow<<endl<<endl;break;
-                                default: cout<<"Amount of bombs: "<<iloscGranatow<<endl<<endl;break;
-                            }
-                            koloruj(7,0);
-                            dzwiek("Audio_RPG\\bomba_wyrzut.wav");
-                            this_thread::sleep_for(chrono::milliseconds(500));
-                            }
-                        }
-                        this_thread::sleep_for(chrono::seconds(1));
-                        dzwiek("Audio_RPG\\bip_bip.wav");
-                        this_thread::sleep_for(chrono::milliseconds(500));
-                        int akt_sciezka=Los(1,0);
-                        int obrazenia =10*iloscGranatow*(Gc.gracz.ATK/2.5); // Obliczenie obrazen
-                        AttackResult w=Gc.gracz.damage(*cel,obrazenia);//atak posredni, ale ma szanse byc mocniejszy
-                        switch(akt_sciezka) {
-                        case 1:
-                        if (w.krytyczne) dzwiek("Audio_RPG\\TNT_explosion.wav");
-                        else dzwiek("Audio_RPG\\TNT_explosion.wav");
-                        break;
-                        default:
-                            {
-                                if (w.krytyczne) dzwiek("Audio_RPG\\Demoman_response_KaBOOM2.wav");
-                                else dzwiek("Audio_RPG\\Demoman_response_KaBOOM2.wav");
-                                this_thread::sleep_for(chrono::milliseconds(500));
-                                break;
-                            }
-                        }
-                        kiedy_crit(Gc,w,Gc.gracz,*cel);
-                        if (!w.bitesthedust) //kontrola
-                        {
-                            Gc.kodscreen=0;
-                            if (czyZyje(Gc.dzialko))
-                                Gc.kodscreen+=6;
-                            else if (czyZyje(Gc.zasobnik))
-                                Gc.kodscreen+=12;
-                        }
-                        else
-                        {
-                            cel->HP=0;
-                            switch(cel->typ){
-                                case TP::NALADOWANY: Gc.gracz.SP+=(cel->SP)/2;
-                                default: break;;
-                            }
-                        }
-                        for (Character* wrog:Gc.enemies) {
-                        if (wrog==cel||!(czyZyje(wrog))) continue;
-                        int splash=obrazenia/3;
-                        AttackResult w_splash=Gc.gracz.damage(*wrog,splash);
-                        if(!w_splash.bitesthedust&&w_splash.krytyczne) wskazany++;
-                        kiedy_crit(Gc,w_splash,Gc.gracz,*wrog);
-                        if (w_splash.bitesthedust) wrog->HP=0;
-                        switch(wrog->typ){
-                            case TP::NALADOWANY: Gc.gracz.SP++; break;
+                        cout<<"Created StickyBomb["<<i2<<"] | adress:"<<B<<" | attachedTo:"<<B->attachedTo<<" | IsCritical: "<<B->krytyczna<<" | damage: "<<B->obrazenia<<endl;
+                        this_thread::sleep_for(ZaWarudo::milliseconds(500));
+                    }
+                }
+                if(Bomby.empty()){
+                    narysujScene(Gc);
+                    koloruj(7,0);
+                    dzwiek("Audio_RPG\\Demoman_response_nobombs.wav");
+                    cout<<Gc.S.L.get(Tx::SBL_nobombs)<<endl;
+                    cout<<endl;
+                    this_thread::sleep_for(ZaWarudo::seconds(2));
+                }
+                else{
+                this_thread::sleep_for(ZaWarudo::seconds(1));
+                dzwiek("Audio_RPG\\bip_bip.wav");
+                this_thread::sleep_for(ZaWarudo::milliseconds(500));
+                int akt_sciezka=Los(2,1);
+                MultiDamageResult Wybuch;
+                for (auto &B : Bomby)
+                {
+                    DamageResult splash;
+                    MultiDamageResult pojedynczyWybuch = B->eksploduj(Gc.enemies);
+                    for (auto &DR : pojedynczyWybuch.Eksplozja)
+                    {
+                        Wybuch.Eksplozja.push_back(DR);
+                    }
+                }
+                //atak posredni, ale ma szanse byc mocniejszy
+                switch(akt_sciezka) {
+                    case 1:
+                    dzwiek("Audio_RPG\\TNT_explosion.wav");
+                    break;
+                    default:{
+                            dzwiek("Audio_RPG\\Demoman_response_KaBOOM2.wav");
+                            this_thread::sleep_for(ZaWarudo::milliseconds(500));
+                            break;
+                    }
+                }
+                Gc.Obiekty.erase(remove_if(Gc.Obiekty.begin(),Gc.Obiekty.end(),[](const unique_ptr<NonLivingObject> &O){
+                                            return dynamic_cast<StickyBomb*>(O.get())!=nullptr;
+                                            }),Gc.Obiekty.end());
+                Bomby.clear();
+                for (DamageResult &pojedynczy:Wybuch.Eksplozja){
+                    if (!pojedynczy.bitesthedust) //kontrola
+                    {
+                        Gc.gracz.ObecnaAkcja=AK::NO_ACTION;
+                    }
+                    else
+                    {
+                        Gc.gracz.ObecnaAkcja=AK::NO_ACTION;
+                        switch(pojedynczy.cel->typ){
+                            case TP::NALADOWANY: Gc.gracz.SP+=(pojedynczy.cel->SP)/2;
                             default: break;
                         }
-                                }
-    if (EverybodyDEAD_NOT_BIG_SUPRISE(Gc.enemies)){
-        Gc.kodscreen=1;
-        if (czyZyje(Gc.dzialko)) Gc.kodscreen+=6;
-        else if (czyZyje(Gc.zasobnik)) Gc.kodscreen+=12;
+                    }
+                }
+                screen(Gc);
+                kiedy_efekt(Gc,Wybuch,Gc.gracz);
     }
-    Gc.e=0;
-    screen(Gc);
-    this_thread::sleep_for(chrono::seconds(2));
-    Gc.gracz.ATK=20;
+    Gc.wybor=false;
+    this_thread::sleep_for(ZaWarudo::seconds(2));
+    Cel=nullptr;
 }
-void AkcjaGorzalka(Gamecontent &Gc){
+void AkcjaGorzalka(Gamecontent &Gc,Scrumpy* &gorz){
     screen(Gc);
     koloruj(11,8);
-    switch(Gc.S.Jezyk){
-        case POLSKI:{cout<<"Pijesz gorzalke"<<endl;
-            koloruj(7,0);
-            Dialog(Gc.gracz.Imie,12,0,"Ejj... Czas na popicie Scrumpym!");
-            break;}
-        default:{cout<<"You are drinking Scrumpy"<<endl;
-            koloruj(7,0);
-            Dialog(Gc.gracz.Imie,12,0,"Aye, me bottle o'scrumpy!");
-            break;}
-    }
-    dzwiek_ciagly("Audio_RPG\\Demoman_response_scrumpy.wav");
-    this_thread::sleep_for(chrono::seconds(1));
-    int iloscZdrowkadoZycka=Los(400,120);
-    short alkoholizm=Los(4,0);//1 na 5 szansy na upojenie-efekt przez ktory zadajesz o 20% mniej ataku
-    int przedHP = Gc.gracz.HP;
-    Gc.gracz.heal(Gc.gracz,iloscZdrowkadoZycka);
-    screen(Gc);
-    koloruj(11,8);
-    switch(Gc.S.Jezyk){
-        case POLSKI:cout<<"Zyskujesz "<<Gc.gracz.HP-przedHP<<"HP"<<endl;break;
-        default:cout<<"You gained "<<Gc.gracz.HP-przedHP<<"HP"<<endl;break;
-    }
+    cout<<Gc.S.L.get(Tx::Used_info_Scrumpy)<<endl;
     koloruj(7,0);
-    this_thread::sleep_for(chrono::seconds(1));
+    Dialog(Gc.gracz.Imie,12,0,Gc.S.L.get(Tx::Demo_response_Scrumpy));
+    dzwiek_ciagly("Audio_RPG\\Demoman_response_scrumpy.wav");
+    this_thread::sleep_for(ZaWarudo::seconds(1));
+    short alkoholizm=Los(4,0);//1 na 5 szansy na upojenie-efekt przez ktory zadajesz o 20% mniej ataku
+    unsigned int przedHP = Gc.gracz.HP;
+    gorz->uzyj(Gc.gracz);
+    screen(Gc);
+    koloruj(11,8);
+    cout<<Gc.S.L.get(Tx::Scrumpy_HPGain)<<Gc.gracz.HP-przedHP<<"HP"<<endl;
+    koloruj(7,0);
+    this_thread::sleep_for(ZaWarudo::seconds(1));
     if (pijany==true){
         for (auto& efekt:Gc.gracz.efekty){
             if (efekt.ID==2&&efekt.aktywny==true){
                 efekt.duration++;
                 koloruj(8,0);
-                switch(Gc.S.Jezyk){
-                    case POLSKI:cout<<"Podtrzymales efekt upicia. Liczba kolejek="<<efekt.duration;break;
-                    default:cout<<"You maintained the stiffness. Number of turns="<<efekt.duration;break;
-                }
+                cout<<Gc.S.L.get(Tx::Scrumpy_DrunkMaintained)<<efekt.duration;
                 koloruj(7,0);
             }
         }
     }
     else{
-        if (alkoholizm==4)
+        if (alkoholizm==3)
         {
             cout<<endl<<endl;
             koloruj(8,0);
-            switch(Gc.S.Jezyk){
-                case POLSKI:cout<<"..."<<Gc.gracz.Imie<<" sie upil, od teraz ma 33% wiecej szansy na spudlowanie!\n";break;
-                default:cout<<"..."<<Gc.gracz.Imie<<" has got drunked, from now he has 33% more chance of missing!\n";break;
-            }
+            cout<<"..."<<Gc.gracz.Imie<<Gc.S.L.get(Tx::Scrumpy_Drunk)<<endl;
             short kolejka=Los(5,2);
             Gc.gracz.dodajefekt(UPICIE,kolejka,Gc.gracz);
-            cout<<"L kolejek="<<kolejka-1;
+            cout<<Gc.S.L.get(Tx::TurnsRemaining)<<kolejka-1;
             koloruj(7,0);
             short wersja_pijanstwa=Los(5,0);
             switch (wersja_pijanstwa)
             {
                 case 0:
                     dzwiek("Audio_RPG\\Demoman_response_pijanstwo.wav");
-                    switch(Gc.S.Jezyk){
-                        case POLSKI: Dialog(Gc.gracz.Imie,12,0,"Zaraz was zabije i bede was zabijal i ja nigdy tego nie zrobie, poniewaz i tak bedziecie martwi, wiec nie bede musial was zabijac.");break;
-                        default: Dialog(Gc.gracz.Imie,12,0,"Gonna kill you and I'll keep killin' you and I'll never, cause you're 'onna be dead and I don't gotta kill you.");break;
-                    }
-                    this_thread::sleep_for(chrono::seconds(8));
+                    Dialog(Gc.gracz.Imie,12,0,Gc.S.L.get(Tx::Demo_response_drunk1));
+                    this_thread::sleep_for(ZaWarudo::seconds(8));
                     break;
                 case 1:
                     dzwiek("Audio_RPG\\Demoman_response_pijanstwo2.wav");
-                    switch(Gc.S.Jezyk){
-                        case POLSKI: Dialog(Gc.gracz.Imie,12,0,"(paplanina)... wlasnie chcialem pojechac na stacje BOLOWEGO POCIAGU w Train Town...");break;
-                        default: Dialog(Gc.gracz.Imie,12,0,"(gibberish)... I was gonna take down to the Pain Train station in Train Town...");break;
-                    }
-                    this_thread::sleep_for(chrono::seconds(7));
+                    Dialog(Gc.gracz.Imie,12,0,Gc.S.L.get(Tx::Demo_response_drunk2));
+                    this_thread::sleep_for(ZaWarudo::seconds(7));
                     break;
                 case 2:
                     dzwiek("Audio_RPG\\Demoman_response_pijanstwo3.wav");
-                    switch(Gc.S.Jezyk){
-                        case POLSKI: Dialog(Gc.gracz.Imie,12,0,"Ja... kocham takich jak ... ty tutaj... nie was.");break;
-                        default: Dialog(Gc.gracz.Imie,12,0,"I love... every... single... one of ye... not you.");break;
-                    }
-                    Dialog(Gc.gracz.Imie,12,0,"Aoch, jestes singlem... jeden z was... nie ty.");
-                    this_thread::sleep_for(chrono::seconds(5));
+                    Dialog(Gc.gracz.Imie,12,0,Gc.S.L.get(Tx::Demo_response_drunk3));
+                    this_thread::sleep_for(ZaWarudo::seconds(5));
                     break;
                 case 3:
                     dzwiek("Audio_RPG\\Demoman_response_pijanstwo5.wav");
-                    switch(Gc.S.Jezyk){
-                        case POLSKI: Dialog(Gc.gracz.Imie,12,0,"(Niezrozumialy belkot)");break;
-                        default: Dialog(Gc.gracz.Imie,12,0,"(Unintelligible gibberish)");break;
-                    }
-                    this_thread::sleep_for(chrono::seconds(5));
+                    Dialog(Gc.gracz.Imie,12,0,Gc.S.L.get(Tx::Demo_response_drunk5));
+                    this_thread::sleep_for(ZaWarudo::seconds(5));
                     break;
                 case 4:
                     dzwiek("Audio_RPG\\Demoman_response_pijanstwo6.wav");
-                    switch(Gc.S.Jezyk){
-                        case POLSKI: Dialog(Gc.gracz.Imie,12,0,"Kazdy z was... eee... co mysli, zeee... jest lepszy ode mnie... nastepny dostanie za...");break;
-                        default: Dialog(Gc.gracz.Imie,12,0,"Any of you that think ye're better 'n me, you're gon' have another thing c-..");break;
-                    }
-                    this_thread::sleep_for(chrono::seconds(5));
+                    Dialog(Gc.gracz.Imie,12,0,Gc.S.L.get(Tx::Demo_response_drunk6));
+                    this_thread::sleep_for(ZaWarudo::seconds(5));
                     break;
 
                 default:
                     dzwiek("Audio_RPG\\Demoman_response_pijanstwo4.wav");
-                    switch(Gc.S.Jezyk){
-                        case POLSKI: Dialog(Gc.gracz.Imie,12,0,"... A potem wyhoduję ci tylek na tylku, jak ja jestem trawiastym czlowiekiem, durniu, poganie jeden...");break;
-                        default: Dialog(Gc.gracz.Imie,12,0,"And then I'll grow yer arse's arse and I'm the grass man, punk yeah heaven's heathen...");break;
-                    }
-                    this_thread::sleep_for(chrono::seconds(7));
+                    Dialog(Gc.gracz.Imie,12,0,Gc.S.L.get(Tx::Demo_response_drunk4));
+                    this_thread::sleep_for(ZaWarudo::seconds(7));
                     break;
             }
         }
     }
 }
-void AkcjaTarcza(Gamecontent &Gc){
-    int Specjalnepunkciki=Los(100,0);
-    if (Specjalnepunkciki>=75)
-        Gc.gracz.SP+=tarcza+1;
-    else
-        Gc.gracz.SP+=tarcza;
-    Gc.gracz.DEF=tarcza;
+void AkcjaTarcza(Gamecontent &Gc,Shield* &Sh){
+    int przedSP=Gc.gracz.SP;
+    Sh->uzyj(Gc.gracz);
     screen(Gc);
     koloruj(11,8);
-    switch(Gc.S.Jezyk){
-        case POLSKI:cout<<"Zaslaniasz sie tarcza"<<endl;break;
-        default:cout<<"You cover yourself with shield"<<endl;break;
-    }
+    cout<<Gc.S.L.get(Tx::Used_info_Shield)<<endl;
     koloruj(7,0);
     koloruj(11,8);
-    if (Specjalnepunkciki>=75){
-        switch(Gc.S.Jezyk){
-        case POLSKI:cout<<"Zyskujesz "<<tarcza+1<<" SP!"<<endl;break;
-        default:cout<<"You gained "<<tarcza+1<<" SP!"<<endl;break;
-        }
-    }
-    else{
-        switch(Gc.S.Jezyk){
-        case POLSKI:cout<<"Zyskujesz "<<tarcza<<" SP!"<<endl;break;
-        default:cout<<"You gained "<<tarcza<<" SP!"<<endl;break;
-        }
-    }
+    if (Gc.gracz.SP-przedSP>Sh->dodawaczSP)
+        cout<<Gc.S.L.get(Tx::Shield_SPGain)<<Sh->dodawaczSP+1<<" SP!"<<endl;
+    else
+        cout<<Gc.S.L.get(Tx::Shield_SPGain)<<Sh->dodawaczSP<<" SP!"<<endl;
     koloruj(7,0);
-    this_thread::sleep_for(chrono::seconds(2));
+    this_thread::sleep_for(ZaWarudo::seconds(2));
 }
-void AkcjaEkwipunek(Gamecontent &Gc,Przedmiot &fajerwerk,Przedmiot &tel,Przedmiot &zatyczki,bool &validchoice){
+void AkcjaEkwipunek(Gamecontent &Gc,bool &validchoice){
     char choice;
+    Flashbang *flashbang = Gc.gracz.znajdz<Flashbang>();
+    Telephone *tel=Gc.gracz.znajdz<Telephone>();
+    Earplugs *zatyczki=Gc.gracz.znajdz<Earplugs>();
+    if(!flashbang||!tel||!zatyczki)
+    {
+        cerr<<Gc.S.L.get(Tx::Error_noItem)<<endl;
+        exit(0);
+    }
     dzwiek("Audio_RPG\\menu_selecting.wav");
-    przedmioty_wybrane(Gc,fajerwerk,tel,zatyczki);
+    przedmioty_wybrane(Gc,*flashbang,*tel,*zatyczki);
     bool przedmiotyDone=false;
     while (!przedmiotyDone)
     {
@@ -1209,170 +782,119 @@ void AkcjaEkwipunek(Gamecontent &Gc,Przedmiot &fajerwerk,Przedmiot &tel,Przedmio
         {
             case '1':
             {
-                if (fajerwerk.quant!=0)
+                if (flashbang->quant!=0)
                 {
-                    Gc.kodscreen=5;
-                    if (czyZyje(Gc.dzialko))
-                        Gc.kodscreen=10;
-                    else if (czyZyje(Gc.zasobnik))
-                        Gc.kodscreen+=12;
+                    Gc.gracz.ObecnaAkcja=AK::ACTION_USED_ITEM;
                     screen(Gc);
                     koloruj(11,8);
-                    switch(Gc.S.Jezyk){
-                        case POLSKI:cout<<"Rzucasz granat ogluszajacy (flashgrenade)!\n";break;
-                        default:cout<<"You have thrown a flashbang!\n";break;
-                    }
+                    cout<<Gc.S.L.get(Tx::Used_info_Flashbang)<<endl;
                     koloruj(7,0);
                     dzwiek_ciagly("Audio_RPG\\rzut.wav");
                     dzwiek("Audio_RPG\\flashbang_throw.wav");
-                    this_thread::sleep_for(chrono::seconds(2));
-                    fajerwerk.quant--;
-                    Gc.kodscreen=19;
+                    this_thread::sleep_for(ZaWarudo::seconds(2));
+                    Gc.Wydarzenie=GW::FLASH;
+                    flashbang->uzyj(Gc.enemies);
                     screen(Gc);
                     dzwiek("Audio_RPG\\flashbang_boom.wav");
-                    this_thread::sleep_for(chrono::milliseconds(2500));
-                    for (Character* wrog:Gc.enemies){
-                    if (czyZyje(wrog)==true) wrog->dodajefekt(OGLUSZENIE,3,*wrog);
-                    }
-                    Gc.kodscreen=0;
-                    if (czyZyje(Gc.dzialko))
-                        Gc.kodscreen+=6;
-                    else if (czyZyje(Gc.zasobnik))
-                        Gc.kodscreen+=12;
+                    this_thread::sleep_for(ZaWarudo::milliseconds(2500));
+                    Gc.gracz.ObecnaAkcja=AK::NO_ACTION;
+                    Gc.Wydarzenie=GW::NONE;
                     screen(Gc);
                     koloruj(11,8);
-                    switch(Gc.S.Jezyk){
-                        case POLSKI:cout<<"Ogluszasz zombiaki (bedziesz mial dodatkowe ruchy)!"<<endl;break;
-                        default:cout<<"You have stunned the zombies (you will have additional turns)!"<<endl;break;
-                    }
+                    cout<<Gc.S.L.get(Tx::Flashbang_stun_info)<<endl;
                     koloruj(7,0);
-                    this_thread::sleep_for(chrono::seconds(3));
+                    this_thread::sleep_for(ZaWarudo::seconds(3));
                     przedmiotyDone=true;
                     validchoice=true;
                 }
                         else {
-                            switch(Gc.S.Jezyk){
-                            case POLSKI:cout<<"Nie ma takiego przedmiotu\n";break;
-                            default:cout<<"There's no such an item\n";break;
-                            }
+                            cout<<Gc.S.L.get(Tx::Error_noItem)<<endl;
                         }
                         break;}
             case '2':
             {
-                if(tel.quant!=0&&Gc.gracz.SP>=5)
+                if(tel->quant!=0&&Gc.gracz.SP>=5)
                 {
                     Gc.gracz.SP-=5;
-                    Gc.kodscreen=0;
-                    if (czyZyje(Gc.dzialko)) Gc.kodscreen+=6;
-                    if (czyZyje(Gc.zasobnik)) Gc.kodscreen+=12;
+                    Gc.gracz.ObecnaAkcja==AK::NO_ACTION;
                     screen(Gc);
                     dzwiek("Audio_RPG\\telephone_ring.wav");
                     koloruj(11,8);
-                    switch(Gc.S.Jezyk){
-                    case POLSKI:
-                        cout<<"Dzwonisz do inzyniera...!"<<endl;
-                        this_thread::sleep_for(chrono::seconds(2));
-                        cout<<"Odebral!\n"; break;
-                    default:
-                        cout<<"You are calling Engineer!"<<endl;
-                        this_thread::sleep_for(chrono::seconds(2));
-                        cout<<"He answered!\n"; break;
-
-                    }
+                    cout<<Gc.S.L.get(Tx::Phone1)<<endl;
+                    this_thread::sleep_for(ZaWarudo::seconds(2));
+                    cout<<Gc.S.L.get(Tx::Phone2)<<endl;
                     koloruj(7,0);
                     dzwiek_ciagly("Audio_RPG\\Demoman_response_engineer.wav");//Inzynierze...
-                    this_thread::sleep_for(chrono::milliseconds(500));
+                    this_thread::sleep_for(ZaWarudo::milliseconds(500));
                     dzwiek("Audio_RPG\\Engineer_response_yeah.wav");//tak?
-                    this_thread::sleep_for(chrono::milliseconds(1200));
+                    this_thread::sleep_for(ZaWarudo::milliseconds(1200));
                     dzwiek_ciagly("Audio_RPG\\Demoman_HELP.wav");//POMOZ!:(
-                    this_thread::sleep_for(chrono::milliseconds(500));
+                    this_thread::sleep_for(ZaWarudo::milliseconds(500));
                     if (!czyZyje(Gc.dzialko)&&!czyZyje(Gc.zasobnik)){
                         short wersjaodpowiedzi=Los(2,0);
                         if (wersjaodpowiedzi==1) dzwiek_ciagly("Audio_RPG\\Engineer_response01.wav");
                         else if(wersjaodpowiedzi==2) dzwiek_ciagly("Audio_RPG\\Engineer_response02.wav");
                         else dzwiek_ciagly("Audio_RPG\\Engineer_response03.wav");
-                        this_thread::sleep_for(chrono::milliseconds(500));
+                        this_thread::sleep_for(ZaWarudo::milliseconds(500));
                         screen(Gc);
                         koloruj(11,8);
-                        switch (Gc.S.Jezyk){
-                            case POLSKI: cout<<"Inzynier zrzuca...";break;
-                            default: cout<<"Engineer drops a... ";break;
-                        }
+                        cout<<Gc.S.L.get(Tx::Phone3);
                         koloruj(7,0);
-                        this_thread::sleep_for(chrono::seconds(1));
+                        this_thread::sleep_for(ZaWarudo::seconds(1));
                         short zrzut=Los(100,0);
                         if (zrzut>50){
-                            Gc.kodscreen=6;
-                            noweDzialko(Gc.x,Gc.dzialko,Gc.S.Jezyk);
+                            noweDzialko(Gc.x,Gc.dzialko,Gc.S.L);
                             screen(Gc);
                             koloruj(11,8);
                             cout<<Gc.dzialko->Imie<<"!"<<endl;
                             koloruj(7,0);
                         }
                                 else{
-                                    Gc.kodscreen=12;
-                                    nowyZasobnik(Gc.x,Gc.zasobnik,Gc.S.Jezyk);
+                                    nowyZasobnik(Gc.x,Gc.zasobnik,Gc.S.L);
                                     screen(Gc);
                                     koloruj(11,8);
                                     cout<<Gc.zasobnik->Imie<<"!"<<endl;
                                     koloruj(7,0);
                                     }
                                 dzwiek_ciagly("Audio_RPG\\build.wav");
-                                this_thread::sleep_for(chrono::seconds(2));
+                                this_thread::sleep_for(ZaWarudo::seconds(2));
                             }
                             else
                             {
                                 dzwiek("Audio_RPG\\Engineer_nope.wav"); //nie
                                 koloruj(14,8);
-                                switch (Gc.S.Jezyk){
-                                    case POLSKI: Dialog("Inzynier",14,8,"Nie!");break;
-                                    default: Dialog("Inzynier",14,8,"Nope!");break;
-                                }
-                                Dialog("Inzynier",14,8,"Nie!");
-                                this_thread::sleep_for(chrono::milliseconds(500));
+                                Dialog("Inzynier",14,8,Gc.S.L.get(Tx::Phone2_rejected));
+                                this_thread::sleep_for(ZaWarudo::milliseconds(500));
                                 dzwiek("Audio_RPG\\telephone_lostcon.wav");
-                                switch (Gc.S.Jezyk){
-                                    case POLSKI: cout<<"Widze, ze bardzo uwielbiasz marnowac ruchy i SP.\n";break;
-                                    default: cout<<"I see you are really fond of wasting moves and SP.\n";break;
-                                }
-                                this_thread::sleep_for(chrono::milliseconds(2000));
+                                 cout<<Gc.S.L.get(Tx::Phone_achievement_wastingSP)<<endl;
+                                this_thread::sleep_for(ZaWarudo::milliseconds(2000));
                             }
                             przedmiotyDone=true;
                             validchoice=true;
 
                             }
-                        else if (tel.quant!=0&&Gc.gracz.SP<5) {
-                                switch(Gc.S.Jezyk){
-                            case POLSKI:cout<<"Nie mozesz, nie masz wystarczajaco SP.";break;
-                            default:cout<<"You can't, you don't have enough SP.\n";break;
-                            }
+                        else if (tel->quant!=0&&Gc.gracz.SP<5) {
+                            cout<<Gc.S.L.get(Tx::Error_noSP);
                         }
                         else {
-                            switch(Gc.S.Jezyk){
-                            case POLSKI:cout<<"Nie ma takiego przedmiotu\n";break;
-                            default:cout<<"There's no such an item\n";break;
-                            }
+                        cout<<Gc.S.L.get(Tx::Error_noItem);
                         }
-                            break;
-                        }
+                        break;}
         case 'x':
         {
             validchoice=false;
             przedmiotyDone=true;
             dzwiek("Audio_RPG\\menu_back.wav");
             screen(Gc);
-            panele(Gc,ult,ulw,ulm,fajerwerk,tel,zatyczki);
+            panele(Gc,*flashbang,*tel,*zatyczki);
             break;}
         default:
-            switch(Gc.S.Jezyk){
-                case POLSKI:cout<<"Zly klawisz"<<endl;break;
-                default:cout<<"Wrong button"<<endl;break;
-            }
+            cout<<Gc.S.L.get(Tx::Error_WrongKey)<<endl;
             break;
         }
     }
 }
-void Input(short &Barka_status,Gamecontent &Gc,Przedmiot &fajerwerk,Przedmiot &tel,Przedmiot & zatyczki)
+void Input(short &Barka_status,Gamecontent &Gc,Przedmiot &flashbang,Przedmiot &tel,Przedmiot & zatyczki)
 {
     char choice;
     Gc.wybor=false;
@@ -1385,19 +907,11 @@ void Input(short &Barka_status,Gamecontent &Gc,Przedmiot &fajerwerk,Przedmiot &t
             switch(efekt.ID){
             case OGLUSZENIE:
                 koloruj(15,8);
-                switch(Gc.S.Jezyk){
-                case POLSKI:
-                    cout<<Gc.gracz.Imie<<" jest ogluszony i nie moze sie ruszyc!"<<endl;
-                    cout<<"Kolejka: "<<efekt.duration<<endl;
-                    break;
-                default:
-                    cout<<Gc.gracz.Imie<<" is stunned and he can't move!"<<endl;
-                    cout<<"Remains for: "<<efekt.duration<<" turns."<<endl;
-                    break;
-                }
+                cout<<Gc.gracz.Imie<<Gc.S.L.get(Tx::Obj_IsStunned)<<endl;
+                cout<<Gc.S.L.get(Tx::TurnsRemaining)<<efekt.duration<<endl;
                 koloruj(7,0);
                 oglus=true;
-                this_thread::sleep_for(chrono::seconds(3));
+                this_thread::sleep_for(ZaWarudo::seconds(3));
                 break;
             case UPICIE:
                 Gc.gracz.missrate=0.333;
@@ -1415,9 +929,10 @@ void Input(short &Barka_status,Gamecontent &Gc,Przedmiot &fajerwerk,Przedmiot &t
     if (oglus==true) return;
     while (!validchoice)
     {
+        aktualizuj_efekt(Gc);
+        this_thread::sleep_for(ZaWarudo::milliseconds(250));
+        if (_kbhit()){
         choice=_getch();
-
-
             switch (choice)
             {
             case '1':{
@@ -1425,227 +940,218 @@ void Input(short &Barka_status,Gamecontent &Gc,Przedmiot &fajerwerk,Przedmiot &t
                 ofensywa_wybrana(Gc);
                 bool ofensywaDone = false;
                 while(!ofensywaDone){
-                    choice=_getch();
-                    switch (choice)
-                    {
-                    case '1':{ //kiedy '1'
-                        int celataku=target(Gc);
-                        Character* cel=dajCel(celataku,Gc.enemies);
-                        if (!cel) {
-                            cerr << "Nie wybrano poprawnego celu!" << endl;
-                            break;
-                        }
-                        AkcjaMiecz(Gc,cel);
-                        ofensywaDone=true;
-                        validchoice=true;
-                        break;}
-
-                    case '2':{
-                        int celataku=target(Gc);
-                        Character* cel=dajCel(celataku,Gc.enemies);
-                        if (!cel) {
-                            cerr << "Nie wybrano poprawnego celu!" << endl;
-                            break;
-                        }
-                        AkcjaGranatySamoprzylepne(Gc,cel);
-                        ofensywaDone=true;
-                        validchoice=true;
-                        break;}
-                    case '3':{
-                        dzwiek("Audio_RPG\\menu_selecting.wav");
-                        if (Gc.gracz.SP>=15)
+                    this_thread::sleep_for(ZaWarudo::milliseconds(250));
+                    if(_kbhit()){
+                        choice=_getch();
+                        switch (choice)
                         {
-                            Gc.gracz.SP-=15;
-                            int wersjaTekstu=Los(2,0);
-                            int wersjadzwieku=Los(4,1);
-                            screen(Gc);
-                            switch (wersjaTekstu)
-                            {
-                            case 0:
-                                switch(Gc.S.Jezyk){
-                                case POLSKI:Dialog(Gc.gracz.Imie,12,0,"Nie boj sie chloptasiu, bede delikatny!");break;
-                                default: Dialog(Gc.gracz.Imie,12,0,"Don't fret, boyo. I'll be gentle!");break;
-                                }
-                                dzwiek_ciagly("Audio_RPG\\Demoman_response_grozba2.wav");
-                                break;
-                            case 1:
-                                switch(Gc.S.Jezyk){
-                                case POLSKI:Dialog(Gc.gracz.Imie,12,0,"O, zbije cie tak mocno, ze dostaniesz dreszczy!");break;
-                                default: Dialog(Gc.gracz.Imie,12,0,"Ohh, I'm gonna beat ya so hard, you'll have a twitch!");break;
-                                }
-                                dzwiek_ciagly("Audio_RPG\\Demoman_response_grozba.wav");
-                                break;
-                            default:
-                                switch(Gc.S.Jezyk){
-                                case POLSKI:Dialog(Gc.gracz.Imie,12,0,"A TERAZ WSZYSCY WYBUCHNIECIE!!!");break;
-                                default: Dialog(Gc.gracz.Imie,12,0,"And NOW EVERYBODY OF YEH ARE GOIN' TO EXPLODE!!!");break;
-                                }
-                                this_thread::sleep_for(chrono::seconds(3));
-                                break;
-                            }
-                            Gc.kodscreen=4;
-                            if (czyZyje(Gc.dzialko))
-                                Gc.kodscreen+=6;
-                            else if (czyZyje(Gc.zasobnik))
-                                Gc.kodscreen+=12;
-                            screen(Gc);
-                            switch (wersjadzwieku)
-                            {
-                            case 1:
-                                dzwiek("Audio_RPG\\chargeatack1.wav");
-                                break;
-                            case 2:
-                                dzwiek("Audio_RPG\\chargeatack2.wav");
-                                break;
-                            case 3:
-                                dzwiek("Audio_RPG\\chargeatack3.wav");
-                                break;
-                            default:
-                                dzwiek("Audio_RPG\\chargeatack3.wav");
-                                break;
-                            }
-                            this_thread::sleep_for(chrono::seconds(3));
-                            for (Character* wrog:Gc.enemies)
-                                wrog->HP=0;
-                            Gc.kodscreen=0;
-                            if (czyZyje(Gc.dzialko))
-                                Gc.kodscreen+=6;
-                            else if (czyZyje(Gc.zasobnik))
-                                Gc.kodscreen+=12;
-                            dzwiek("Audio_RPG\\wiwat_uderzenie.wav");
-                            system("cls");
-                            if (czyZyje(Gc.dzialko)){
-                                Gc.dzialko->HP=0;
-                                Gc.kodscreen=1;
-                                screen(Gc);
-                                koloruj(11,8);
-                                cout<<"BOOOOOOOOOOOOOOM!!!"<<endl<<endl;
-                                switch(Gc.S.Jezyk){
-                                case POLSKI:cout<<"Dzialko zostaje zniszczone z powodu wybuchu!\n";break;
-                                default:cout<<"Sentry got destroyed due to explosion!\n";break;
-                                }
-                            }
-                            else if (czyZyje(Gc.zasobnik)){
-                                Gc.zasobnik->HP=0;
-                                Gc.kodscreen=1;
-                                screen(Gc);
-                                koloruj(11,8);
-                                cout<<"BOOOOOOOOOOOOOOM!!!"<<endl<<endl;
-                                switch(Gc.S.Jezyk){
-                                case POLSKI:cout<<"Zasobnik zostaje zniszczony z powodu wybuchu!\n";break;
-                                default:cout<<"Dispenser got destroyed due to explosion!\n";break;
-                                }
+                        case '1':{ //kiedy '1'
+                            Eyelander* miecz=Gc.gracz.znajdz<Eyelander>();
+                            if(!miecz){
+                                cerr<<Gc.S.L.get(Tx::Error_noItem)<<endl;
                             }
                             else{
-                            screen(Gc);
-                            koloruj(11,8);
-                            cout<<"BOOOOOOOOOOOOOOM!!!"<<endl;}
-                            switch(Gc.S.Jezyk){
-                                case POLSKI:cout<<"\n"<<Gc.gracz.Imie<<" przezywa, poniewaz zaslonil sie tarcza "<<endl;break;
-                                default:cout<<"\n"<<Gc.gracz.Imie<<" survives thanks to the shield "<<endl;break;
+                                int celataku=target(Gc);
+                                Character* cel=dajCel(celataku,Gc.enemies);
+                                if (!cel) {
+                                    cerr << Gc.S.L.get(Tx::Error_targetnotvalid) << endl;
+                                    break;
+                                }
+                                AkcjaMiecz(Gc,cel,miecz);
+                                ofensywaDone=true;
+                                validchoice=true;
+                            }
+                            break;}
+
+                        case '2':{
+                            WyrzutnikGranatow* SBLauncher=Gc.gracz.znajdz<WyrzutnikGranatow>();
+                            if(!SBLauncher){
+                                cerr<<Gc.S.L.get(Tx::Error_noItem)<<endl;
+                            }
+                            else{
+                                int celataku=target(Gc);
+                                Character* cel=dajCel(celataku,Gc.enemies);
+                                if (!cel) {
+                                    cerr << Gc.S.L.get(Tx::Error_targetnotvalid) << endl;
+                                    break;
+                                }
+                                AkcjaGranatySamoprzylepne(Gc,cel,SBLauncher);
+                                ofensywaDone=true;
+                                validchoice=true;
+                            }
+                            break;}
+                        case '3':{
+                            dzwiek("Audio_RPG\\menu_selecting.wav");
+                            if (Gc.gracz.SP>=15)
+                            {
+                                Gc.gracz.SP-=15;
+                                int wersjaTekstu=Los(2,0);
+                                int wersjadzwieku=Los(4,1);
+                                screen(Gc);
+                                switch (wersjaTekstu)
+                                {
+                                case 0:
+                                    Dialog(Gc.gracz.Imie,12,0,Gc.S.L.get(Tx::Demo_response_Caber1));
+                                    dzwiek_ciagly("Audio_RPG\\Demoman_response_grozba2.wav");
+                                    break;
+                                case 1:
+                                    Dialog(Gc.gracz.Imie,12,0,Gc.S.L.get(Tx::Demo_response_Caber2));
+                                    dzwiek_ciagly("Audio_RPG\\Demoman_response_grozba.wav");
+                                    break;
+                                default:
+                                    Dialog(Gc.gracz.Imie,12,0,Gc.S.L.get(Tx::Demo_response_Caber3));
+                                    this_thread::sleep_for(ZaWarudo::seconds(3));
+                                    break;
+                                }
+                                Gc.gracz.ObecnaAkcja=AK::SPECIAL;
+                                screen(Gc);
+                                switch (wersjadzwieku)
+                                {
+                                case 1:
+                                    dzwiek("Audio_RPG\\chargeatack1.wav");
+                                    break;
+                                case 2:
+                                    dzwiek("Audio_RPG\\chargeatack2.wav");
+                                    break;
+                                case 3:
+                                    dzwiek("Audio_RPG\\chargeatack3.wav");
+                                    break;
+                                default:
+                                    dzwiek("Audio_RPG\\chargeatack3.wav");
+                                    break;
+                                }
+                                this_thread::sleep_for(ZaWarudo::seconds(3));
+                                for (Character* wrog:Gc.enemies)
+                                    wrog->HP=0;
+                               Gc.gracz.ObecnaAkcja==AK::NO_ACTION;
+                                dzwiek("Audio_RPG\\wiwat_uderzenie.wav");
+                                system("cls");
+                                if (czyZyje(Gc.dzialko)){
+                                    Gc.dzialko->HP=0;
+                                    Gc.gracz.ObecnaAkcja==AK::NO_ACTION;
+                                    screen(Gc);
+                                    koloruj(11,8);
+                                    cout<<"BOOOOOOOOOOOOOOM!!!"<<endl<<endl;
+                                    cout<<Gc.S.L.get(Tx::Caber_SDestroyed)<<endl;
+                                }
+                                else if (czyZyje(Gc.zasobnik)){
+                                    Gc.zasobnik->HP=0;
+                                    Gc.gracz.ObecnaAkcja==AK::NO_ACTION;
+                                    screen(Gc);
+                                    koloruj(11,8);
+                                    cout<<"BOOOOOOOOOOOOOOM!!!"<<endl<<endl;
+                                    cout<<Gc.S.L.get(Tx::Caber_DDestroyed)<<endl;
+                                }
+                                else{
+                                screen(Gc);
+                                koloruj(11,8);
+                                Gc.gracz.ObecnaAkcja==AK::NO_ACTION;
+                                cout<<"BOOOOOOOOOOOOOOM!!!"<<endl;}
+                                cout<<"\n"<<Gc.gracz.Imie<<Gc.S.L.get(Tx::Caber_result)<<endl;
+                                koloruj(7,0);
+
+                                if (pijany==true){
+                                    koloruj(11,8);
+                                    cout<<Gc.S.L.get(Tx::Caber_UnTouched)<<endl;
+                                }
+                                else
+                                {
+                                    Gc.gracz.dodajefekt(OGLUSZENIE,2,Gc.gracz);
+                                    koloruj(15,8);
+                                    cout<<Gc.S.L.get(Tx::Caber_Touched)<<endl;
                                 }
                             koloruj(7,0);
-
-                            if (pijany==true){
-                                koloruj(11,8);
-                                switch(Gc.S.Jezyk){
-                                case POLSKI:cout<<"Byl tak opruty, ze nawet wybuch go nie ruszyl!!! "<<endl;break;
-                                default:cout<<"\n"<<"He was so drunk, he didn't got affected from the explosion!!!"<<endl;break;
-                                }
+                            this_thread::sleep_for(ZaWarudo::seconds(5));
+                            screen(Gc);
+                            Gc.dlacase=true;
+                            this_thread::sleep_for(ZaWarudo::seconds(1));
+                            ofensywaDone=true;
+                            validchoice=true;
                             }
-                            else
-                            {
-                                Gc.gracz.dodajefekt(OGLUSZENIE,2,Gc.gracz);
-                                koloruj(15,8);
-                                switch(Gc.S.Jezyk){
-                                case POLSKI:cout<<" Niestety zostaje ogluszony na jedna runde...\n";break;
-                                default:cout<<" Unfortunately, he gets stunned for 1 turn...\n";break;
-                                }
-                                koloruj(7,0);
-                            }
-
-                        this_thread::sleep_for(chrono::seconds(5));
-                        screen(Gc);
-                        dlacase=true;
-                        this_thread::sleep_for(chrono::seconds(1));
-                        ofensywaDone=true;
-                        validchoice=true;
+                            else cout<<Gc.S.L.get(Tx::Error_noSP)<<endl;
                         }
-                        else
-                        switch(Gc.S.Jezyk){
-                            case POLSKI:cout<<"Nie mozesz, nie masz wystarczajaco SP"<<endl;break;
-                            default:cout<<"You can't, you don't have enough SP"<<endl; break;
+                        default:{
+                            cout<<Gc.S.L.get(Tx::Error_nope_tf2reference)<<endl;
+                            break;}
                         }
-                        break;}
-                    default:{
-                        cout<<"Nope"<<endl;
-                        break;}
                     }
-                    }
-                }break;
+                }
+            }break;
             case '2': //kiedy '2'
             {
                 dzwiek("Audio_RPG\\menu_selecting.wav");
                 wsparcie_wybrane(Gc);
                 bool wsparcieDone=false;
                 while (!wsparcieDone){
+                    this_thread::sleep_for(ZaWarudo::milliseconds(250));
+                    if(_kbhit()){
                     choice=_getch();
                     switch(choice)
                     {
                     case '1':{
+                        Scrumpy* trunek=Gc.gracz.znajdz<Scrumpy>();
+                        if(!trunek){
+                            cerr<<Gc.S.L.get(Tx::Error_noItem)<<endl;
+                        }
+                        else{
                         dzwiek("Audio_RPG\\menu_selecting.wav");
-                        AkcjaGorzalka(Gc);
+                        AkcjaGorzalka(Gc,trunek);
                         wsparcieDone=true;
                         validchoice=true;
+                        }
                         break;}
                         case '2':{
+                            Shield* Sh=Gc.gracz.znajdz<Shield>();
+                            if(!Sh){
+                                cerr<<Gc.S.L.get(Tx::Error_noItem)<<endl;
+                            }
+                            else{
                             dzwiek("Audio_RPG\\menu_selecting.wav");
-                            AkcjaTarcza(Gc);
+                            AkcjaTarcza(Gc,Sh);
                             wsparcieDone=true;
                             validchoice=true;
+                            }
                             break;}
                     default:{
-                        cout<<"Nope"<<endl;
+                        cout<<Gc.S.L.get(Tx::Error_nope_tf2reference)<<endl;
                         break;}
+                    }
                     }
                 }
             }break;
             case '3':
             {
-            AkcjaEkwipunek(Gc,fajerwerk,tel,zatyczki,validchoice);
+            AkcjaEkwipunek(Gc,validchoice);
             break;}
             default:{ // gdy inny klawisz
                 break;}
+        }
         }
     }
 }
 void DzialTURN(Gamecontent &Gc)
 {
+    aktualizuj_efekt(Gc);
     bool ogl=false;
     if (Gc.dzialko->HP>0)
     {
         koloruj(11,8);
-        cout<<Gc.dzialko->Imie<<" turn:                   "<<endl<<endl;
+        cout<<Gc.dzialko->Imie<<Gc.S.L.get(Tx::Turn_info)<<endl<<endl;
         koloruj(7,0);
-        this_thread::sleep_for(chrono::seconds(2));
+        this_thread::sleep_for(ZaWarudo::seconds(2));
         for (const auto &efekt:Gc.dzialko->efekty){
             if (efekt.aktywny==true)
             {
                 switch(efekt.ID){
                 case OGLUSZENIE:
                     koloruj(11,8);
-                    switch (Gc.S.Jezyk){
-                        case POLSKI:cout<<Gc.dzialko->Imie<<" zostalo zdeazktywowane!"<<endl;
-                        cout<<"Kolejka: "<<efekt.duration<<endl;
-                        break;
-                        default:cout<<Gc.dzialko->Imie<<" has turned off!"<<endl;
-                        cout<<"Lasts till: "<<efekt.duration<<"turns."<<endl;
-                        break;
-                    }
-                    this_thread::sleep_for(chrono::seconds(2));
+                    cout<<Gc.dzialko->Imie<<Gc.S.L.get(Tx::Obj_IsDeactivated)<<endl;
+                    cout<<Gc.S.L.get(Tx::TurnsRemaining)<<efekt.duration<<endl;
+                    this_thread::sleep_for(ZaWarudo::seconds(2));
                     ogl=true;
                     screen(Gc);
                     break;
+                default:break;
                 }
             }
         }
@@ -1668,43 +1174,34 @@ void DzialTURN(Gamecontent &Gc)
             system("cls");
             screen(Gc);
             koloruj(11,8);
-            switch (Gc.S.Jezyk){
-                case POLSKI:
-                cout<<Gc.dzialko->Imie<<" pokonalo "<<cel->Imie<<"!"<<endl; break;
-                default:
-                cout<<Gc.dzialko->Imie<<" has defeated "<<cel->Imie<<"!"<<endl; break;
-            }
+            cout<<Gc.dzialko->Imie<<Gc.S.L.get(Tx::Defeat_info)<<cel->Imie<<"!"<<endl;
             koloruj(7,0);
         }
         dzwiek_ciagly("Audio_RPG\\sentry_shoot.wav");
-        this_thread::sleep_for(chrono::seconds(1));
+        this_thread::sleep_for(ZaWarudo::seconds(1));
     }
 }
 void ZasobTURN(Gamecontent &Gc)
 {
+    aktualizuj_efekt(Gc);
     bool ogl=false;
     if (czyZyje(Gc.zasobnik))
     {
-        cout<<Gc.zasobnik->Imie<<" turn:                               "<<endl<<endl;
-        this_thread::sleep_for(chrono::seconds(2));
+        cout<<Gc.zasobnik->Imie<<Gc.S.L.get(Tx::Turn_info)<<endl<<endl;
+        this_thread::sleep_for(ZaWarudo::seconds(2));
         for (const auto &efekt:Gc.zasobnik->efekty){
             if (efekt.aktywny==true)
             {
                 switch (efekt.ID){
                 case OGLUSZENIE:
                     koloruj(15,8);
-                    switch (Gc.S.Jezyk){
-                        case POLSKI:cout<<Gc.zasobnik->Imie<<" zostalo zdeazktywowane!"<<endl;
-                        cout<<"Kolejka: "<<efekt.duration<<endl;
-                        break;
-                        default:cout<<Gc.zasobnik->Imie<<" has turned off!"<<endl;
-                        cout<<"Lasts till: "<<efekt.duration<<"turns."<<endl;
-                        break;
-                    }
-                    this_thread::sleep_for(chrono::seconds(2));
+                    cout<<Gc.zasobnik->Imie<<Gc.S.L.get(Tx::Obj_IsDeactivated)<<endl;
+                    cout<<Gc.S.L.get(Tx::TurnsRemaining)<<efekt.duration<<endl;
+                    this_thread::sleep_for(ZaWarudo::seconds(2));
                     ogl=true;
                     screen(Gc);
                     break;
+                default: break;
                 }
             }
         }
@@ -1713,14 +1210,9 @@ void ZasobTURN(Gamecontent &Gc)
         Gc.zasobnik->heal(Gc.gracz,Gc.zasobnik->ATK);
         screen(Gc);
         koloruj(11,8);
-        switch (Gc.S.Jezyk){
-                case POLSKI:
-                cout<<"Zostales uleczony przez: "<<Gc.zasobnik->Imie<<"!\n"; break;
-                default:
-                cout<<"You got healed by: "<<Gc.zasobnik->Imie<<"!\n"; break;
-            }
+        cout<<Gc.S.L.get(Tx::Dispenser_heal)<<Gc.zasobnik->Imie<<"!\n";
         koloruj(7,0);
-        this_thread::sleep_for(chrono::seconds(2));
+        this_thread::sleep_for(ZaWarudo::seconds(2));
     }
 }
 bool preferencja_commandera(vector<Character*> &enemies,short id,short Tytanowe){
@@ -1754,12 +1246,7 @@ void CommanderTURN(Gamecontent &Gc,Character *Leader){
         if(preferencja_commandera(Gc.enemies,id_leadera,Tytanowe)){
             if (typatak==0&&Leader->SP>=3&&!krytowanie_aktywne){
                 narysujScene(Gc);koloruj(0,10);
-                switch (Gc.S.Jezyk){
-                case POLSKI:
-                cout<< Leader->Imie<<" daje swojemu oddzialowi wieksza szanse na kryty o 15% na 2 rundy!"<<endl; break;
-                default:
-                cout<< Leader->Imie<<" gives his army crit boost (15% more chance) for 2 turns!"<<endl; break;
-            }
+                cout<< Leader->Imie<<Gc.S.L.get(Tx::Comm_Crits)<<endl;
             koloruj(7,0);
                 Leader->SP=0;
                 for (Character* &wrog:Gc.enemies){
@@ -1772,8 +1259,9 @@ void CommanderTURN(Gamecontent &Gc,Character *Leader){
                     screen(Gc);
                     return;
                 }
-                AttackResult wl=Leader->damage(Gc.gracz,Leader->ATK);
-                kiedy_crit(Gc,wl,*Leader,Gc.gracz);
+                DamageResult wl=Leader->damage(Gc.gracz,Leader->ATK,CritMode::RANDOM);
+                MultiDamageResult TempMDR=nowyMDR({wl});
+                kiedy_efekt(Gc,TempMDR,*Leader);
                 if(!wl.bitesthedust){
                     Gc.gracz.PainReact();
                 }
@@ -1782,11 +1270,8 @@ void CommanderTURN(Gamecontent &Gc,Character *Leader){
         }
         else{
                 dzwiek("Audio_RPG\\Commander_order.wav");
-                switch(Gc.S.Jezyk){
-                case POLSKI:Dialog(Leader->Imie,0,10,"Zmienic szyki!!!");break;
-                default:Dialog(Leader->Imie,0,10,"Change order!!!");break;
-                }
-                this_thread::sleep_for(chrono::seconds(2));
+                Dialog(Leader->Imie,0,10,Gc.S.L.get(Tx::Comm_response_regroup));
+                this_thread::sleep_for(ZaWarudo::seconds(2));
                 vector<pair<Character*,int>> temp;
                 dzwiek("Audio_RPG\\marsz.wav");
                 for(auto &wrog:Gc.enemies){
@@ -1811,7 +1296,7 @@ void CommanderTURN(Gamecontent &Gc,Character *Leader){
 
         }
 }
-void NaLZomTURN(Gamecontent &Gc,Character* energ,Przedmiot zatyczki)
+void NaLZomTURN(Gamecontent &Gc,Character* energ)
 {
     unsigned short typatak=Los(3,0);
     bool wzmocnienie_istnieje=false;
@@ -1822,6 +1307,7 @@ void NaLZomTURN(Gamecontent &Gc,Character* energ,Przedmiot zatyczki)
         switch(efekt.ID){
             case OGLUSZENIE: ogl=true; break;
         case UPICIE: graczpijany=true; break;
+        default:break;
         }
     }
     for (const Character* wrog:Gc.enemies){
@@ -1837,123 +1323,100 @@ void NaLZomTURN(Gamecontent &Gc,Character* energ,Przedmiot zatyczki)
     }
     if (typatak==0&&!(wzmocnienie_istnieje))
     {
-        koloruj(12,14);
-        switch(Gc.S.Jezyk){
-        case POLSKI: cout<<energ->Imie<<" przekazuje POZYTYWNY FLUID ENERGETYCZNY pozostalym zombie";koloruj(7,0);cout<<"\n";break;
-        default: cout<<energ->Imie<<" gives other zombies the POSITIVE ENERGY FLOW";koloruj(7,0);cout<<"\n";break;
-        }
+        energ->ObecnaAkcja=AK::ACTION2;
+        narysujScene(Gc);
+        koloruj(12,14);cout<<endl;
+        cout<<energ->Imie<<Gc.S.L.get(Tx::Elec_StrengthCast);koloruj(7,0);cout<<"\n";
         dzwiek("Audio_RPG\\elektrycznosc1.wav");
-        this_thread::sleep_for(chrono::seconds(3));
+        this_thread::sleep_for(ZaWarudo::seconds(3));
         for (Character* wrog:Gc.enemies){
                 wrog->dodajefekt(WZMOCNIENIE,3,*wrog);
         }
         energ->SP+=Gc.enemies.size();
+        energ->ObecnaAkcja=AK::NO_ACTION;
         screen(Gc);
         koloruj(1,14);
-        switch(Gc.S.Jezyk){
-            case POLSKI:cout<<"Atak wszystkich zombie zostaje zwiększony o 30% na 3 rundy!!";koloruj(7,0);cout<<"\n";break;
-            default:cout<<"The attack power of every zombie has increased by 30% for 3 turns!!";koloruj(7,0);cout<<"\n";break;
-        }
+        cout<<Gc.S.L.get(Tx::Obj_IsPowered);koloruj(7,0);cout<<"\n";
     }
     else if(typatak==1&&energ->SP>=10&&!(ogl)){
         energ->SP-=10;
-        Gc.kodscreen=24;
+        energ->ObecnaAkcja=AK::SPECIAL;
         screen(Gc);
         koloruj(12,14);
-        switch(Gc.S.Jezyk){
-            case POLSKI:cout<<energ->Imie<<" wyladowuje ENERGETYCZNY OVERDRIVE!!";koloruj(7,0);cout<<"\n";break;
-            default:cout<<energ->Imie<<" releases the ENERGETIC OVERDRIVE!!";koloruj(7,0);cout<<"\n";break;
-        }
+        cout<<energ->Imie<<Gc.S.L.get(Tx::Elec_Overdrive);koloruj(7,0);cout<<"\n";
         dzwiek("Audio_RPG\\elektrycznosc_shockwave.wav");
-        this_thread::sleep_for(chrono::seconds(2));
-        Gc.kodscreen=0;
-        if(czyZyje(Gc.dzialko)) Gc.kodscreen+=6;
-        else if(czyZyje(Gc.zasobnik)) Gc.kodscreen+=12;
+        this_thread::sleep_for(ZaWarudo::seconds(2));
+        energ->ObecnaAkcja=AK::NO_ACTION;
         if(czyZyje(Gc.dzialko)) {
             Gc.dzialko->dodajefekt(OGLUSZENIE,2,*Gc.dzialko);
             screen(Gc);
             koloruj(15,8);
-            switch(Gc.S.Jezyk){
-                case POLSKI:cout<<Gc.dzialko->Imie<<" przestalo dzialac.\n";break;
-                default:cout<<Gc.dzialko->Imie<<" has stopped working.\n";break;
-            }
+            cout<<Gc.dzialko->Imie<<Gc.S.L.get(Tx::Obj_StoppedWorking)<<endl;
             dzwiek_ciagly("Audio_RPG\\wylaczanko.wav");
-            this_thread::sleep_for(chrono::seconds(1));
+            this_thread::sleep_for(ZaWarudo::seconds(1));
         }
         else if(czyZyje(Gc.zasobnik)) {
             Gc.zasobnik->dodajefekt(OGLUSZENIE,2,*Gc.zasobnik);
             screen(Gc);
-            koloruj(15,8);switch(Gc.S.Jezyk){
-                case POLSKI:cout<<Gc.zasobnik->Imie<<" przestalo dzialac.\n";break;
-                default:cout<<Gc.zasobnik->Imie<<" has stopped working.\n";break;
-            }
+            koloruj(15,8);
+            cout<<Gc.zasobnik->Imie<<Gc.S.L.get(Tx::Obj_StoppedWorking)<<"\n";
             dzwiek_ciagly("Audio_RPG\\wylaczanko.wav");
-            this_thread::sleep_for(chrono::seconds(1));
+            this_thread::sleep_for(ZaWarudo::seconds(1));
         }
         else narysujScene(Gc);
             if (graczpijany==true)
             {
                 cout<<endl;
                 koloruj(8,0);
-                switch(Gc.S.Jezyk){
-                    case POLSKI: cout<<" To nawet nie drasnelo "<<Gc.gracz.Imie<<" ... BO TAKI OPRUTY!!!       \n";break;
-                    default: cout<<" This hasn't even affected "<<Gc.gracz.Imie<<" ... BECAUSE HE'S SO DRUNK!!!       \n";break;
-                }
+                cout<<Gc.gracz.Imie<<Gc.S.L.get(Tx::Obj_NoSuffer)<<endl;
                koloruj(7,0);
-                this_thread::sleep_for(chrono::seconds(3));
+                this_thread::sleep_for(ZaWarudo::seconds(3));
             }
             else{
                 Gc.gracz.dodajefekt(OGLUSZENIE,2,Gc.gracz);
-                AttackResult O=energ->damage(Gc.gracz,energ->ATK*2);
-                kiedy_crit(Gc,O,*energ,Gc.gracz);
+                DamageResult O=energ->damage(Gc.gracz,energ->ATK*2,CritMode::RANDOM);
+                MultiDamageResult TempMDR=nowyMDR({O});
+                kiedy_efekt(Gc,TempMDR,*energ);
                 koloruj(12,8);
-                switch(Gc.S.Jezyk){
-                    case POLSKI: cout<<" To byl super efektywny cios na "<<Gc.gracz.Imie<<" ... zostaje ogluszony na 1 runde!\n";break;
-                    default: cout<<" This was super effective on "<<Gc.gracz.Imie<<" ... he got stunned for 1 round!\n";break;
-                }
+                cout<<Gc.S.L.get(Tx::Obj_SufferedStrongAttack)<<Gc.gracz.Imie<<endl;
+                cout<<Gc.gracz.Imie<<Gc.S.L.get(Tx::Obj_IsStunned)<<endl;
+                cout<<Gc.S.L.get(Tx::TurnsRemaining)<<1<<endl;
                 koloruj(7,0);
-                this_thread::sleep_for(chrono::seconds(3));
+                this_thread::sleep_for(ZaWarudo::seconds(3));
             }
         }
 
     else {
-        Gc.kodscreen=23;
+        energ->ObecnaAkcja=AK::ACTION1;
         narysujScene(Gc);
         koloruj(12,14);
-        switch(Gc.S.Jezyk){
-                    case POLSKI: cout<<energ->Imie<<" oddaje elektryczny atak.\n";break;
-                    default:cout<<energ->Imie<<" gives off an electric attack.\n";break;
-                }
-                koloruj(7,0);
+         cout<<energ->Imie<<Gc.S.L.get(Tx::Elec_Attack)<<endl;
+        koloruj(7,0);
         dzwiek_ciagly("Audio_RPG\\elektrycznosc2.wav");
+        energ->ObecnaAkcja=AK::NO_ACTION;
         if (czy_pudlo(energ->missrate)){
             energ->spudlowanie();
-            kodscreen=0;
-            if(czyZyje(Gc.dzialko)) Gc.kodscreen+=6;
-            else if(czyZyje(Gc.zasobnik)) Gc.kodscreen+=12;
             screen(Gc);
             return;
         }
-        AttackResult w=energ->damage(Gc.gracz,energ->ATK);
-        kiedy_crit(Gc,w,*energ,Gc.gracz);
+        DamageResult w=energ->damage(Gc.gracz,energ->ATK,CritMode::RANDOM);
+        MultiDamageResult TempMDR=nowyMDR({w});
+        kiedy_efekt(Gc,TempMDR,*energ);
         if (czyZyje(Gc.dzialko)){
-                AttackResult w_dzial=energ->damage(*Gc.dzialko,energ->ATK*2);
-                kiedy_crit(Gc,w_dzial,*energ,*Gc.dzialko);
+                DamageResult w_dzial=energ->damage(*Gc.dzialko,energ->ATK*2,CritMode::RANDOM);
+                MultiDamageResult TempMDR=nowyMDR({w_dzial});
+                kiedy_efekt(Gc,TempMDR,*energ);
                 if (!w_dzial.bitesthedust&&czyZyje(Gc.dzialko))
                 {
                     dzwiek("Audio_RPG\\Demo_build_ouch.wav");
                 }
                 else{
-                    Gc.kodscreen=0;
                     dzwiek("Audio_RPG\\Demo_ouch_buildDestroyed.wav");
                     screen(Gc);
                     koloruj(11,8);
-                    switch(Gc.S.Jezyk){
-                        case POLSKI: cout<<energ->Imie<<" zniszyl "<<Gc.dzialko->Imie<<"!!!\n";break;
-                        default:cout<<energ->Imie<<" has destroyed "<<Gc.dzialko->Imie<<"!!!\n";break;
-                    }
+                    cout<<energ->Imie<<Gc.S.L.get(Tx::Obj_Destroyed)<<Gc.dzialko->Imie<<"!!!\n";
                     koloruj(7,0);
-                    this_thread::sleep_for(chrono::seconds(3));
+                    this_thread::sleep_for(ZaWarudo::seconds(3));
                 }
         }
         else if(czyZyje(Gc.zasobnik)){
@@ -1964,23 +1427,20 @@ void NaLZomTURN(Gamecontent &Gc,Character* energ,Przedmiot zatyczki)
                     return;
                 }
             if (los_cel==1){
-                AttackResult w_zas=energ->damage(*Gc.zasobnik,energ->ATK*3);
-                kiedy_crit(Gc,w_zas,*energ,*Gc.zasobnik);
+                DamageResult w_zas=energ->damage(*Gc.zasobnik,energ->ATK*3,CritMode::RANDOM);
+                MultiDamageResult TempMDR=nowyMDR({w_zas});
+                kiedy_efekt(Gc,TempMDR,*energ);
                 if (!w_zas.bitesthedust&&czyZyje(Gc.zasobnik))
                 {
                     dzwiek("Audio_RPG\\Demo_build_ouch.wav");
                 }
                 else{
-                    Gc.kodscreen=0;
                     dzwiek("Audio_RPG\\Demo_ouch_buildDestroyed.wav");
                     screen(Gc);
                     koloruj(11,8);
-                    switch(Gc.S.Jezyk){
-                        case POLSKI: cout<<energ->Imie<<" zniszyl "<<Gc.zasobnik->Imie<<"!!!\n";break;
-                        default:cout<<energ->Imie<<" has destroyed "<<Gc.zasobnik->Imie<<"!!!\n";break;
-                    }
+                    cout<<energ->Imie<<Gc.S.L.get(Tx::Obj_Destroyed)<<Gc.zasobnik->Imie<<"!!!\n";
                     koloruj (7,0);
-                    this_thread::sleep_for(chrono::seconds(3));
+                    this_thread::sleep_for(ZaWarudo::seconds(3));
                 }
             }
         }
@@ -1988,45 +1448,25 @@ void NaLZomTURN(Gamecontent &Gc,Character* energ,Przedmiot zatyczki)
         energ->SP+=2;
 
     }
-    Gc.kodscreen=0;
-    if(czyZyje(Gc.dzialko)) Gc.kodscreen+=6;
-    else if(czyZyje(Gc.zasobnik)) Gc.kodscreen+=12;
+    energ->ObecnaAkcja=AK::NO_ACTION;
     screen(Gc);
 }
-void BombyTurn(Gamecontent &Gc,Character* Expld,short odliczanie,Przedmiot zatyczki)
+void BombyTurn(Gamecontent &Gc,Character* Expld)
 {
     Expld->odliczanie--;
     if (Expld->odliczanie!=0&&Expld->odliczanie>=0)
     {
         dzwiek("Audio_RPG\\Det_pack_timer.wav");
-        switch(Gc.S.Jezyk){
-        case POLSKI:{
-            koloruj(0,4);cout<<" ____________________________________________________________";koloruj (7,0);cout<<"\n";
-            koloruj(0,4);cout<<"|"<<string(10,(char)177)<<"ZOMBIE EKSPLODER WYBUCHNIE ZA "<<Expld->odliczanie<<" RUNDY!!!"<<string(10,(char)177)<<"|";koloruj (7,0);cout<<"\n";
-            koloruj(0,4);cout<<" ------------------------------------------------------------";koloruj (7,0);cout<<"\n";
-            break;}
-        default:{
-            koloruj(0,4);cout<<" _______________________________________________________________";koloruj (7,0);cout<<"\n";
-            koloruj(0,4);cout<<"|"<<string(10,(char)177)<<"ZOMBIE EKSPLODER WILL EXPLODE IN "<<Expld->odliczanie<<" ROUNDS!!!"<<string(10,(char)177)<<"|";koloruj (7,0);cout<<"\n";
-            koloruj(0,4);cout<<" ---------------------------------------------------------------";koloruj (7,0);cout<<"\n";
-            break;}
-        }
-        this_thread::sleep_for(chrono::seconds(3));
+        string tekst="";
+        tekst+=Gc.S.L.get(Tx::Expl_Warning1);
+        tekst+=to_string(Expld->odliczanie);
+        tekst+=Gc.S.L.get(Tx::Expl_Warning2);
+        tag_notyfikacji(tekst,0,4);
+        this_thread::sleep_for(ZaWarudo::seconds(3));
         screen(Gc);
     }
     else{
-            switch(Gc.S.Jezyk){
-        case POLSKI:{
-             koloruj(0,12);cout<<" _____________________________________________________________";koloruj (7,0);cout<<"\n";
-        koloruj(0,12);cout<<"|"<<string(6,(char)177)<<"ZOMBIE EXPLODER WYBUCHNIE! RATUJ SIE KTO MOZE!!!"<<string(6,(char)177)<<"|";koloruj (7,0);cout<<"\n";
-        koloruj(0,12);cout<<" -------------------------------------------------------------";koloruj (7,0);cout<<"\n";
-            break;}
-        default:{
-             koloruj(0,12);cout<<" _____________________________________________________________";koloruj (7,0);cout<<"\n";
-        koloruj(0,12);cout<<"|"<<string(6,(char)177)<<"ZOMBIE EXPLODER IS GOING TO EXPLODE! GOD HELP!!!"<<string(6,(char)177)<<"|";koloruj (7,0);cout<<"\n";
-        koloruj(0,12);cout<<" -------------------------------------------------------------";koloruj (7,0);cout<<"\n";
-            break;}
-        }
+       tag_notyfikacji(Gc.S.L.get(Tx::Expl_WarningFatal),0,4);
         dzwiek("Audio_RPG\\zaplon_instant_kill.wav");
         if (czy_pudlo(Expld->missrate)){
                 Expld->spudlowanie();
@@ -2034,17 +1474,17 @@ void BombyTurn(Gamecontent &Gc,Character* Expld,short odliczanie,Przedmiot zatyc
                     screen(Gc);
                     return;
                 }
-        this_thread::sleep_for(chrono::milliseconds(3500));
+        this_thread::sleep_for(ZaWarudo::milliseconds(3500));
         Gc.gracz.HP=0;
         Expld->HP=0;
         Gc.dzialko->HP=0;
         Gc.zasobnik->HP=0;
-        Gc.kodscreen=21;
+        Expld->ObecnaAkcja=AK::SPECIAL;
         screen(Gc);
-        this_thread::sleep_for(chrono::milliseconds(2500));
+        this_thread::sleep_for(ZaWarudo::milliseconds(2500));
     }
 }
-void ToxZomTURN(Gamecontent &Gc,Character* ToxicZombie,Przedmiot zatyczki)
+void ToxZomTURN(Gamecontent &Gc,Character* ToxicZombie,const Przedmiot &zatyczki)
 {
     unsigned short typataku=Los(9,0);
     bool madepresje=false;
@@ -2058,6 +1498,7 @@ void ToxZomTURN(Gamecontent &Gc,Character* ToxicZombie,Przedmiot zatyczki)
                 case ZATRUCIE:
                     zatruty=true;
                     break;
+                default:break;
             }
         }
     }
@@ -2067,165 +1508,90 @@ void ToxZomTURN(Gamecontent &Gc,Character* ToxicZombie,Przedmiot zatyczki)
             switch (typobrazy)
             {
             case 0:{
-                switch(Gc.S.Jezyk){
-                    case POLSKI:AdvDialog(ToxicZombie->Imie,10,8,{
-                        {"Twoja stara jest tak gruba!",3000,"Audio_RPG\\yo_mama_fat2.wav"},
-                        {"Donald Trump chce jej uzyc jej JAKO MUR GRANICZNY!!!!!",5400,"Audio_RPG\\yo_mama_joke01.wav"}});
-                        break;
-                    default:AdvDialog(ToxicZombie->Imie,10,8,{
-                        {"Yo mama's so fat!",3000,"Audio_RPG\\yo_mama_fat2.wav"},
-                        {"Donald Trump used her as a BORDER WALL!!!!!",5400,"Audio_RPG\\yo_mama_joke01.wav"}});
-                        break;
-                }
+                AdvDialog(ToxicZombie->Imie,10,8,{
+                        {Gc.S.L.get(Tx::Toxic_YOMUMFAT),3000,"Audio_RPG\\yo_mama_fat2.wav"},
+                        {Gc.S.L.get(Tx::Toxic_YOMUM1),5400,"Audio_RPG\\yo_mama_joke01.wav"}});
                 break;}
             case 1:{
-                switch(Gc.S.Jezyk){
-                    case POLSKI:AdvDialog(ToxicZombie->Imie,10,8,{
-                        {"Twoja stara jest tak gruba!",3000,"Audio_RPG\\yo_mama_fat2.wav"},
-                        {"Gdy dolaczyla do Discorda, SCRASHOWALA CALY SERWER!!!!!",6000,"Audio_RPG\\yo_mama_joke02.wav"}});
-                        break;
-                    default:AdvDialog(ToxicZombie->Imie,10,8,{
-                        {"Your mother is so fat!",3000,"Audio_RPG\\yo_mama_fat.wav"},
-                        {"When she joined Discord, she CRASHED THE ENTIRE SERVER!!!!!",6000,"Audio_RPG\\yo_mama_joke02.wav"}});
-                        break;
-                }
+                AdvDialog(ToxicZombie->Imie,10,8,{
+                        {Gc.S.L.get(Tx::Toxic_YOMUMFAT),3000,"Audio_RPG\\yo_mama_fat2.wav"},
+                        {Gc.S.L.get(Tx::Toxic_YOMUM2),6000,"Audio_RPG\\yo_mama_joke02.wav"}});
                 break;}
             case 2:{
-                switch(Gc.S.Jezyk){
-                    case POLSKI:AdvDialog(ToxicZombie->Imie,10,8,{
-                        {"Twoja stara jest tak gruba!",3000,"Audio_RPG\\yo_mama_fat.wav"},
-                        {"Jej pepek dochodzi do domu 20 min przed nia sama!!!",6500,"Audio_RPG\\yo_mama_joke03.wav"},
-                        {"... Pamietam to z jednego filmiku na YT.",5500,"Audio_RPG\\yo_mama_joke03_1.wav"}});
-                        break;
-                    default:AdvDialog(ToxicZombie->Imie,10,8,{
-                        {"Your mama is so fat!",3000,"Audio_RPG\\yo_mama_fat2.wav"},
-                        {"Her belly button gets home 20 min before she does!!!",6500,"Audio_RPG\\yo_mama_joke03.wav"},
-                        {"... As I remember, I took that from one YT video.",5500,"Audio_RPG\\yo_mama_joke03_1.wav"}});
-                        break;
-                    }
+                AdvDialog(ToxicZombie->Imie,10,8,{
+                        {Gc.S.L.get(Tx::Toxic_YOMUMFAT),3000,"Audio_RPG\\yo_mama_fat.wav"},
+                        {Gc.S.L.get(Tx::Toxic_YOMUM3),6500,"Audio_RPG\\yo_mama_joke03.wav"},
+                        {Gc.S.L.get(Tx::Toxic_YOMUM3_1),5500,"Audio_RPG\\yo_mama_joke03_1.wav"}});
                 break;}
             case 3:
-                switch(Gc.S.Jezyk){
-                    case POLSKI:AdvDialog(ToxicZombie->Imie,10,8,{
-                        {"Twoja stara jest tak brzydka!",3000,"Audio_RPG\\yo_mama_ugly.wav"},
-                        {"To ona jest powodem, dlaczego Herobrine z Minecrafta NIE MA ZRENIC!!!",7000,"Audio_RPG\\yo_mama_joke04_1.wav"},
-                        {"... Ok, to bylo kreatywne powiazanie!",4000,"Audio_RPG\\yo_mama_joke04_2.wav"}});
-                        break;
-                    default:AdvDialog(ToxicZombie->Imie,10,8,{
-                        {"Your mother is so ugly!",3000,"Audio_RPG\\yo_mama_ugly.wav"},
-                        {"She is the real reason, why Herobrine from Minecraft DOESN'T HAVE PUPILS!!!",7000,"Audio_RPG\\yo_mama_joke04_1.wav"},
-                        {"... Ok, that was a creative one!",4000,"Audio_RPG\\yo_mama_joke04_2.wav"}});
-                        break;
-                }
+                AdvDialog(ToxicZombie->Imie,10,8,{
+                        {Gc.S.L.get(Tx::Toxic_YOMUMUGLY),3000,"Audio_RPG\\yo_mama_ugly.wav"},
+                        {Gc.S.L.get(Tx::Toxic_YOMUM4),7000,"Audio_RPG\\yo_mama_joke04_1.wav"},
+                        {Gc.S.L.get(Tx::Toxic_YOMUM4_1),4000,"Audio_RPG\\yo_mama_joke04_2.wav"}});
                 break;
             case 4:
-                switch(Gc.S.Jezyk){
-                case POLSKI:AdvDialog(ToxicZombie->Imie,10,8,{
-                        {"Twoja stara jest tak gruba!",3000,"Audio_RPG\\yo_mama_fat2.wav"},
-                        {"Nie potrzebuje internetu... bo ONA JUZ JEST GLOBALNA!!!!!",6000,"Audio_RPG\\yo_mama_joke05.wav"}});
-                        break;
-                default:AdvDialog(ToxicZombie->Imie,10,8,{
-                        {"Your mama is so fat!",3000,"Audio_RPG\\yo_mama_fat2.wav"},
-                        {"She doesn't need internet... she is ALREADY WORLDWIDE!!!!!",6000,"Audio_RPG\\yo_mama_joke05.wav"}});
-                        break;
-                }
+                AdvDialog(ToxicZombie->Imie,10,8,{
+                        {Gc.S.L.get(Tx::Toxic_YOMUMFAT),3000,"Audio_RPG\\yo_mama_fat2.wav"},
+                        {Gc.S.L.get(Tx::Toxic_YOMUM5),6000,"Audio_RPG\\yo_mama_joke05.wav"}});
                 break;
             case 5:
-                switch(Gc.S.Jezyk){
-                case POLSKI:AdvDialog(ToxicZombie->Imie,10,8,{
-                        {"Twoja stara jest tak glupia!",3000,"Audio_RPG\\yo_mama_stupid2.wav"},
-                        {"Jej splash attack... ZARAZ NIE!",4000,"Audio_RPG\\yo_mama_joke06.wav"},
-                        {"Nie chce spalic tej riposty... emmm...",5000,"Audio_RPG\\yo_mama_joke06_1.wav"},
-                        {"O! Juz pamietam!",3000,"Audio_RPG\\yo_mama_joke06_2.wav"},
-                        {"Twoja stara jest tak glupia! Poszla do dentysty... aby OTRZYMAC BLUETOOTH!!!!!",7800,"Audio_RPG\\yo_mama_joke06_3.wav"}});
-                        break;
-                default:AdvDialog(ToxicZombie->Imie,10,8,{
-                        {"Your mother is so stupid!",3000,"Audio_RPG\\yo_mama_stupid2.wav"},
-                        {"Her splash attack... WAIT, NO!",4000,"Audio_RPG\\yo_mama_joke06.wav"},
-                        {"I don't want to spoil the punchline... ummm...",5000,"Audio_RPG\\yo_mama_joke06_1.wav"},
-                        {"Oh! I remember!",3000,"Audio_RPG\\yo_mama_joke06_2.wav"},
-                        {"Your mother is so stupid! She went to the dentist... TO GET A BLUETOOTH!!!!!",7800,"Audio_RPG\\yo_mama_joke06_3.wav"}});
-                        break;
-                }
+                AdvDialog(ToxicZombie->Imie,10,8,{
+                        {Gc.S.L.get(Tx::Toxic_YOMUMSTUPID),3000,"Audio_RPG\\yo_mama_stupid2.wav"},
+                        {Gc.S.L.get(Tx::Toxic_YOMUM6),4000,"Audio_RPG\\yo_mama_joke06.wav"},
+                        {Gc.S.L.get(Tx::Toxic_YOMUM6_1),5000,"Audio_RPG\\yo_mama_joke06_1.wav"},
+                        {Gc.S.L.get(Tx::Toxic_YOMUM6_2),3000,"Audio_RPG\\yo_mama_joke06_2.wav"},
+                        {Gc.S.L.get(Tx::Toxic_YOMUM6_3),7800,"Audio_RPG\\yo_mama_joke06_3.wav"}});
                 break;
             case 6:
-                switch(Gc.S.Jezyk){
-                case POLSKI:AdvDialog(ToxicZombie->Imie,10,8,{
-                        {"Twoja stara jest tak glupia!",3000,"Audio_RPG\\yo_mama_stupid.wav"},
-                        {"Zwrocila do reklamacji donuta, bo mial DZIURE!!!",4800,"Audio_RPG\\yo_mama_joke07.wav"}});
-                        break;
-                default:AdvDialog(ToxicZombie->Imie,10,8,{
-                        {"Your mother is so stupid!",3000,"Audio_RPG\\yo_mama_stupid.wav"},
-                        {"She returned the donut because it has A HOLE!!!",4800,"Audio_RPG\\yo_mama_joke07.wav"}});
-                        break;
-                }
+                AdvDialog(ToxicZombie->Imie,10,8,{
+                        {Gc.S.L.get(Tx::Toxic_YOMUMSTUPID),3000,"Audio_RPG\\yo_mama_stupid.wav"},
+                        {Gc.S.L.get(Tx::Toxic_YOMUM7),4800,"Audio_RPG\\yo_mama_joke07.wav"}});
                 break;
             case 7:
-                switch(Gc.S.Jezyk){
-                case POLSKI:AdvDialog(ToxicZombie->Imie,10,8,{
-                        {"Twoja stara jest tak glupia!",3000,"Audio_RPG\\yo_mama_stupid2.wav"},
-                        {"Umowila sie na badanie lekarskie do DR. PEPPER'A!!!!",4000,"Audio_RPG\\yo_mama_joke08.wav"}});
-                        break;
-                default: AdvDialog(ToxicZombie->Imie,10,8,{
-                        {"Your mother is so stupid!",3000,"Audio_RPG\\yo_mama_stupid2.wav"},
-                        {"She made an appointment with DR. PEPPER!!!!",4000,"Audio_RPG\\yo_mama_joke08.wav"}});
-                        break;
-                }
+                AdvDialog(ToxicZombie->Imie,10,8,{
+                        {Gc.S.L.get(Tx::Toxic_YOMUMSTUPID),3000,"Audio_RPG\\yo_mama_stupid2.wav"},
+                        {Gc.S.L.get(Tx::Toxic_YOMUM8),4000,"Audio_RPG\\yo_mama_joke08.wav"}});
                 break;
             default:
-                switch(Gc.S.Jezyk){
-            case POLSKI:AdvDialog(ToxicZombie->Imie,10,8,{
-                          {"Tak dla wspomnienia... TWOJA STARA!!!",4000,"Audio_RPG\\yo_mama_joke_default.wav"},
-                          {"Taa... malo wlozylem w to wysilku, ale to nawet samo zawsze dzialalo!",5000,"Audio_RPG\\yo_mama_joke_default2.wav"}});
-                            break;
-                default:AdvDialog(ToxicZombie->Imie,10,8,{
-                          {"One important mention... YOUR MOTHER!!!",4000,"Audio_RPG\\yo_mama_joke_default.wav"},
-                          {"Yeah... that was a low-effort one, but it always hits the punchline!",5000,"Audio_RPG\\yo_mama_joke_default2.wav"}});
-                          break;
-                }
+                AdvDialog(ToxicZombie->Imie,10,8,{
+                          {Gc.S.L.get(Tx::Toxic_YOMUMDEFAULT1),4000,"Audio_RPG\\yo_mama_joke_default.wav"},
+                          {Gc.S.L.get(Tx::Toxic_YOMUMDEFAULT2),5000,"Audio_RPG\\yo_mama_joke_default2.wav"}});
                 break;
             }
             if (zatyczki.quant>0){
                 koloruj (7,8);
-                switch(Gc.S.Jezyk){
-                    case POLSKI: cout<<Gc.gracz.Imie<<" nosi zatyczki - Oczernianie 'starej' nie przejelo gracza...\n"; break;
-                    default: cout<<Gc.gracz.Imie<<" wears earplugs - trashtalk doesn't work here...\n"; break;
-                }
-                this_thread::sleep_for(chrono::seconds(3));
+                cout<<Gc.gracz.Imie<<Gc.S.L.get(Tx::FailedOffend)<<endl;
+                this_thread::sleep_for(ZaWarudo::seconds(3));
             }
             else{
             screen(Gc);
             dzwiek("Audio_RPG\\Demo_krytyczny_cios_psychiczny.wav");
             koloruj (14,13);
-            switch(Gc.S.Jezyk){
-                    case POLSKI: cout<<Gc.gracz.Imie<<" czuje sie upokorzony... jego atak spada o 50%!!\n"; break;
-                    default: cout<<Gc.gracz.Imie<<" feels humiliated... his attack power drops by 50%!!\n"; break;
-                }
+            cout<<Gc.gracz.Imie<<Gc.S.L.get(Tx::SucceededOffend)<<endl;
             koloruj (7,0);
             Gc.gracz.dodajefekt(OSLABIENIE,3,Gc.gracz);
-            this_thread::sleep_for(chrono::seconds(3));
+            this_thread::sleep_for(ZaWarudo::seconds(3));
             dzwiek_ciagly("Audio_RPG\\Demoman_response_smutek.wav");
             screen(Gc);
             }
         }
         else{
-                Gc.kodscreen=22;
+            ToxicZombie->ObecnaAkcja=AK::ACTION1;
             narysujScene(Gc);
             dzwiek("Audio_RPG\\rzyg.wav");
             koloruj(11,8);
-            switch(Gc.S.Jezyk){
-                    case POLSKI: cout<<ToxicZombie->Imie<<" pluje na "<<Gc.gracz.Imie<< " jadem!            "<<endl; break;
-                    default: cout<<ToxicZombie->Imie<<" spits venom on "<<Gc.gracz.Imie<< "                 "<<endl; break;
-                }
+            cout<<ToxicZombie->Imie<<Gc.S.L.get(Tx::Toxic_Spit)<<Gc.gracz.Imie<< "!                 "<<endl;
             koloruj(7,0);
-            this_thread::sleep_for(chrono::seconds(3));
+            this_thread::sleep_for(ZaWarudo::seconds(3));
+            ToxicZombie->ObecnaAkcja=AK::NO_ACTION;
             if (czy_pudlo(ToxicZombie->missrate)){
                     ToxicZombie->spudlowanie();
                     screen(Gc);
                     return;
                 }
-            AttackResult w=ToxicZombie->damage(Gc.gracz,ToxicZombie->ATK);
-            kiedy_crit(Gc,w,*ToxicZombie,Gc.gracz);
+            DamageResult w=ToxicZombie->damage(Gc.gracz,ToxicZombie->ATK,CritMode::RANDOM);
+            MultiDamageResult TempMDR=nowyMDR({w});
+            kiedy_efekt(Gc,TempMDR,*ToxicZombie);
             if (!w.bitesthedust)
             {
                 int demo_ouch=Los(1,0);
@@ -2238,71 +1604,52 @@ void ToxZomTURN(Gamecontent &Gc,Character* ToxicZombie,Przedmiot zatyczki)
                     dzwiek("Audio_RPG\\damage_taken.wav");
                     break;
                 }
-            Gc.kodscreen=0;
-            if(czyZyje(Gc.dzialko))
-                Gc.kodscreen+=6;
-            else if(czyZyje(Gc.zasobnik))
-                Gc.kodscreen+=12;
-                screen(Gc);
-                this_thread::sleep_for(chrono::seconds(1));
+            screen(Gc);
+                this_thread::sleep_for(ZaWarudo::seconds(1));
                 if (Los(100,0)<70){
                     narysujScene(Gc);
                         if(zatruty==false) {
                             Gc.gracz.dodajefekt(ZATRUCIE,3,Gc.gracz);
                             dzwiek("Audio_RPG\\Demoman_response_hssss.wav");
                             koloruj(10,1);
-                            switch(Gc.S.Jezyk){
-                                case POLSKI: cout<<"Zostales Zatruty! Od teraz przez 3 rundy bedzie ci spadac zdrowie!\n"; break;
-                                default: cout<<"You got poisoned! From now for 3 turns your healt will be dropping a little!\n"; break;
-                            }
+                            cout<<Gc.S.L.get(Tx::Toxic_PoisonSuccess)<<endl;
                             koloruj(7,0);
                         }
                         else{
                             koloruj(7,8);
-                            switch(Gc.S.Jezyk){
-                                case POLSKI: cout<<"Zatrucie nie dziala - "<<Gc.gracz.Imie<<" juz jest zatruty.\n";break;
-                                default: cout<<"Poisoning doesn't work here - "<<Gc.gracz.Imie<<" is already poisoned.\n"; break;
-                            }
+                            cout<<Gc.gracz.Imie<<Gc.S.L.get(Tx::Toxic_PoisonFails)<<endl;
                         koloruj(7,0);
                         }
-                    this_thread::sleep_for(chrono::seconds(2));
+                    this_thread::sleep_for(ZaWarudo::seconds(2));
                     screen(Gc);
                 }
             }
         else{
                 Gc.gracz.PainReact();
-                this_thread::sleep_for(chrono::seconds(1));
+                this_thread::sleep_for(ZaWarudo::seconds(1));
             narysujScene(Gc);}
         }
-
+    ToxicZombie->ObecnaAkcja=AK::NO_ACTION;
 }
-void ZomTURN(Gamecontent &Gc,short odliczanie,Character* &t)
+void ZomTURN(Gamecontent &Gc,short odliczanie,Character* &t, const Przedmiot &zatyczki)
 {
-    wybor=true;
-    SprawdzZIndeksem(t,Gc.enemies,wskazany);
+    aktualizuj_efekt(Gc);
+    Gc.wybor=true;
+    SprawdzZIndeksem(t,Gc.enemies,Gc.wskazany);
     koloruj(11,8);
-    cout<<t->Imie<<" turn:          "<<endl;
+    cout<<t->Imie<<Gc.S.L.get(Tx::Turn_info)<<endl;
     koloruj(7,0);
-    this_thread::sleep_for(chrono::seconds(2));
+    this_thread::sleep_for(ZaWarudo::seconds(2));
     bool ogl=false;
     for (const auto& efekt:t->efekty){
         if (efekt.ID==1&&efekt.aktywny==true)//jezeli zostal ogluszony
         {
             koloruj(11,8);
-            switch(Gc.S.Jezyk){
-                case POLSKI:
-                    cout<<t->Imie<<" jest ogluszony i nie moze sie ruszyc!"<<endl;
-                    cout<<"Kolejka: "<<efekt.duration<<endl;
-                    break;
-                default:
-                    cout<<t->Imie<<" is stunned and he can't move!"<<endl;
-                    cout<<"Remains for: "<<efekt.duration<<" turns."<<endl;
-                    break;
-                }
+            cout<<t->Imie<<Gc.S.L.get(Tx::Obj_IsStunned)<<endl;
+            cout<<Gc.S.L.get(Tx::TurnsRemaining)<<efekt.duration<<endl;
             koloruj(7,0);
-            this_thread::sleep_for(chrono::seconds(3));
+            this_thread::sleep_for(ZaWarudo::seconds(3));
             ogl=true;
-            screen(Gc);
             break; // KONIEC TURY! ZOMBIE NIE ATAKUJE
         }
         if (efekt.ID==3&&efekt.aktywny==true)//jezeli zostal wzmocniony
@@ -2310,94 +1657,99 @@ void ZomTURN(Gamecontent &Gc,short odliczanie,Character* &t)
             t->ATK+=t->ATK*0.3;
         }
     }
-    if (ogl==true) return;
+    if (ogl==true) {screen(Gc);return;}
+    Gc.wybor=false;
+    DamageResult w;
     //normalnie
     if (t->typ==TP::TOKSYCZNY) ToxZomTURN(Gc,t,zatyczki);
-    else if(t->typ==TP::EXPLODER) BombyTurn(Gc,t,odliczanie,zatyczki);
-    else if(t->typ==TP::NALADOWANY) NaLZomTURN(Gc,t,zatyczki);
+    else if(t->typ==TP::EXPLODER) BombyTurn(Gc,t);
+    else if(t->typ==TP::NALADOWANY) NaLZomTURN(Gc,t);
     else if(t->typ==TP::COMMANDER) {CommanderTURN(Gc,t);
-    if (kolejComm){kolejComm=false;ZomTURN(Gc,odliczanie,Gc.enemies[0]);}
+    if (kolejComm){kolejComm=false;ZomTURN(Gc,odliczanie,Gc.enemies[0],zatyczki);}
     }
     else{
-
         if (czyZyje(Gc.dzialko)){
                 if (czy_pudlo(t->missrate)){
                     t->spudlowanie();
                     return;
                 }
-                AttackResult w=t->damage(*Gc.dzialko,t->ATK);
-                kiedy_crit(Gc,w,*t,*Gc.dzialko);
+                w=t->damage(*Gc.dzialko,t->ATK,CritMode::RANDOM);
+                MultiDamageResult TempMDR=nowyMDR({w});
+                kiedy_efekt(Gc,TempMDR,*t);
                 if (!w.bitesthedust)
                 {
                     Gc.dzialko->PainReact();
                 }
                 else{
-                    Gc.kodscreen=0;
+                    t->ObecnaAkcja=AK::NO_ACTION;
                     dzwiek("Audio_RPG\\build_destroyed.wav");
                     screen(Gc);
                     koloruj(11,8);
-                    switch(Gc.S.Jezyk){
-                        case POLSKI: cout<<t->Imie<<" zniszyl "<<Gc.dzialko->Imie<<"!!!\n";break;
-                        default:cout<<t->Imie<<" has destroyed "<<Gc.dzialko->Imie<<"!!!\n";break;
-                    }
+                    cout<<t->Imie<<Gc.S.L.get(Tx::Obj_Destroyed)<<Gc.dzialko->Imie<<"!!!\n";
                     koloruj(7,0);
-                    this_thread::sleep_for(chrono::seconds(3));
+                    this_thread::sleep_for(ZaWarudo::seconds(3));
                 }
             return;
         }
         else if(czyZyje(Gc.zasobnik)){
             if (czy_pudlo(t->missrate)){
-                    if (czy_pudlo(t->missrate)){
-                    t->spudlowanie();
-                    return;
-                }
-                AttackResult w=t->damage(*Gc.zasobnik,t->ATK);
-                kiedy_crit(Gc,w,*t,*Gc.zasobnik);
-                if (!w.bitesthedust)
-                {
-                    Gc.zasobnik->PainReact();
-                }
-                else{
-                    Gc.kodscreen=0;
-                    dzwiek("Audio_RPG\\build_destroyed.wav");
-                    screen(Gc);
-                    koloruj(11,8);
-                    switch(Gc.S.Jezyk){
-                        case POLSKI: cout<<t->Imie<<" zniszyl "<<Gc.zasobnik->Imie<<"!!!\n";break;
-                        default:cout<<t->Imie<<" has destroyed "<<Gc.zasobnik->Imie<<"!!!\n";break;
-                    }
-                    koloruj (7,0);
-                    this_thread::sleep_for(chrono::seconds(3));
-                }
+                t->spudlowanie();
                 return;
             }
+            w=t->damage(*Gc.zasobnik,t->ATK,CritMode::RANDOM);
+            MultiDamageResult TempMDR=nowyMDR({w});
+            kiedy_efekt(Gc,TempMDR,*t);
+            if (!w.bitesthedust)
+            {
+                Gc.zasobnik->PainReact();
+            }
+            else{
+                t->ObecnaAkcja=AK::NO_ACTION;
+                dzwiek("Audio_RPG\\build_destroyed.wav");
+                screen(Gc);
+                koloruj(11,8);
+                cout<<t->Imie<<Gc.S.L.get(Tx::Obj_Destroyed)<<Gc.zasobnik->Imie<<"!!!\n";
+                koloruj (7,0);
+                this_thread::sleep_for(ZaWarudo::seconds(3));
+            }
+            return;
         }
         if (czy_pudlo(t->missrate)){
             t->spudlowanie();
             return;
         }
-        AttackResult w1=t->damage(Gc.gracz,t->ATK);
-        kiedy_crit(Gc,w1,*t,Gc.gracz);
-        if (!w1.bitesthedust)
-            {
-                Gc.gracz.PainReact();
-            }
+        w=t->damage(Gc.gracz,t->ATK,CritMode::RANDOM);
+        MultiDamageResult TempMDR=nowyMDR({w});
+        kiedy_efekt(Gc,TempMDR,*t);
+        if (!w.bitesthedust)
+        {
+            Gc.gracz.PainReact();
+        }
         else screen(Gc);
 
-        Gc.wybor=false;
     }
+    if(Gc.debug){
+                 koloruj(7,0);
+                cout<<"DAMAGERESULT: | adress:"<<w.cel<<" bitesthedust:"<<w.bitesthedust<<" | IsCritical: "<<w.krytyczne<<" | damage: "<<w.obrazenia<<endl;
+                this_thread::sleep_for(ZaWarudo::seconds(2));
+            }
+    this_thread::sleep_for(ZaWarudo::milliseconds(250));
 }
 bool CzyBylSklep=false;
 void ciagla_walka(Gamecontent &Gc,short &Barka_status,bool &CzyBylSklep)
 {
-
+    Flashbang *flashbang = Gc.gracz.znajdz<Flashbang>();
+    Telephone *tel=Gc.gracz.znajdz<Telephone>();
+    Earplugs *zatyczki=Gc.gracz.znajdz<Earplugs>();
+    if(!flashbang||!tel||!zatyczki)
+    {
+        cerr<<Gc.S.L.get(Tx::Error_noItem)<<endl;
+        exit(0);
+    }
     Gc.wybor=false;
     for (const Character* wrog:Gc.enemies){
         if (wrog==nullptr) {
-            switch(Gc.S.Jezyk){
-            case POLSKI: cout << "Blad: Wskaznik na wroga jest null!" << endl;break;
-            default: cout << "Error: The pointer of an enemy doesn't exist (null)!" << endl;break;
-            }
+            cout << Gc.S.L.get(Tx::Error_NullPointer) << endl;
             return; // Zakoncz funkcje, jesli wskaznik jest nieprawidlowy
         }
     }
@@ -2408,15 +1760,17 @@ void ciagla_walka(Gamecontent &Gc,short &Barka_status,bool &CzyBylSklep)
         if (Gc.x%5==1&&Gc.x!=1&&!CzyBylSklep)
         {
             Gc.gracz.DEF=1;
-            Gc.kodscreen=20;
+            Gc.Wydarzenie=GW::SHOP;
             CzyBylSklep=true;
             dzwiek_loop("Audio_RPG\\Upgradestation_loop.wav");
             screen(Gc);
-            panele(Gc,ult,ulw,ulm,fajerwerk,tel,zatyczki);
+            panele(Gc,*flashbang,*tel,*zatyczki);
             do
             {
-                sklep_input(Gc,tarcza,WATK,MATK,ult,ulw,ulm,fajerwerk,tel,zatyczki);
-            }while (Gc.kodscreen==20);
+                sklep_input(Gc,*flashbang,*tel,*zatyczki);
+            }while (Gc.Wydarzenie==GW::SHOP);
+            cout << "DEBUG: wyszedlem ze sklepu\n";
+            this_thread::sleep_for(ZaWarudo::milliseconds(1000));
             short battlecry=Los(10,0);
             if (battlecry<5)
                 dzwiek("Audio_RPG\\Demoman_response_battlecry.wav");
@@ -2425,151 +1779,107 @@ void ciagla_walka(Gamecontent &Gc,short &Barka_status,bool &CzyBylSklep)
         }
         else
         {
-        if (czyZyje(Gc.dzialko))
-            Gc.kodscreen=6;
-        else if (czyZyje(Gc.zasobnik))
-            Gc.kodscreen=12;
-        else
-            Gc.kodscreen=0;
+        Gc.Wydarzenie=GW::NONE;
+        Gc.gracz.ObecnaAkcja=AK::NO_ACTION;
+        flashbang = Gc.gracz.znajdz<Flashbang>();
+        tel=Gc.gracz.znajdz<Telephone>();
+        zatyczki=Gc.gracz.znajdz<Earplugs>();
+        if(!flashbang||!tel||!zatyczki)
+        {
+            cerr<<Gc.S.L.get(Tx::Error_noItem)<<endl;
+            exit(0);
+        }
         for (Character* wrog:Gc.enemies) {
             if (czyZyje(wrog)&&wrog->czy_doubleATK==true) {
                 screen(Gc);
-                this_thread::sleep_for(chrono::seconds(1));
-                ZomTURN(Gc,wrog->odliczanie,wrog);
-                wybor=false;
+                this_thread::sleep_for(ZaWarudo::seconds(1));
+                ZomTURN(Gc,wrog->odliczanie,wrog,*zatyczki);
+                Gc.wybor=false;
                 if (!czyZyje(Gc.gracz)) return;
             }
         }
         screen(Gc);
-        panele(Gc,ult,ulw,ulm,fajerwerk,tel,zatyczki);
-        Gc.gracz.missrate=0.08;
-        Gc.gracz.ATK=20;
-        Input(Barka_status,Gc,fajerwerk,tel,zatyczki);
-        Gc.kodscreen=0;
-        if (czyZyje(Gc.dzialko)) Gc.kodscreen+=6;
-        else if (czyZyje(Gc.zasobnik)) Gc.kodscreen+=12;
+        panele(Gc,*flashbang,*tel,*zatyczki);
+        Gc.gracz.missrate=0.07;
+        Input(Barka_status,Gc,*flashbang,*tel,*zatyczki);
+        aktualizuj_efekt(Gc);
+        Gc.gracz.ObecnaAkcja=AK::NO_ACTION;
         if (czyZyje(Gc.dzialko)&&!(EverybodyDEAD_NOT_BIG_SUPRISE(Gc.enemies)))
             DzialTURN(Gc);
         else if (czyZyje(Gc.zasobnik)&&!(EverybodyDEAD_NOT_BIG_SUPRISE(Gc.enemies)))
             ZasobTURN(Gc);
         screen(Gc);
-        if (EverybodyDEAD_NOT_BIG_SUPRISE(Gc.enemies)==true) {
+        if (EverybodyDEAD_NOT_BIG_SUPRISE(Gc.enemies)) {
+            Gc.wybor=false;
             CzyBylSklep=false;
             for (Character* wrog:Gc.enemies){
-            if (czyZyje(wrog)) wrog->updateujEfekty(*wrog);
             Gc.gracz.EXP+=wrog->EXP+(10*Gc.x);
             ogluszenie=false;
             if (czyZyje(wrog)) wrog->updateujEfekty(*wrog);
             }
-            switch(Gc.S.Jezyk){
-            case POLSKI:{
-                for (const Character* wrog:Gc.enemies){
-                if (liczba_wrogow==1){cout << "\n" << wrog->Imie << " zostal pokonany! Wygrywasz!" << endl;}
-                else cout << "\n Wszyscy wrogowie zostali pokonani! Wygrywasz!" << endl;break;
-                }
-                break;}
-            default:{
-                for (const Character* wrog:Gc.enemies){
-                if (liczba_wrogow==1){ cout << "\n" << wrog->Imie << " has been defeated! You win!" << endl;}
-                else cout << "\n Every enemy here has been defeated! You win!" << endl;break;
-                }
-                break;}
-            }
+            if(liczba_wrogow>1) cout << "\n"<<Gc.S.L.get(Tx::EnemiesDefeated)<< endl;
+            else cout<<"\n"<<Gc.enemies[0]->Imie<<Gc.S.L.get(Tx::EnemyDefeated)<<endl;
             czekaj=0;
             int kodwypowiedz=Los(10,0);
-            if (dlacase==true)
+            if (Gc.dlacase==true)
                 {
-                    switch(Gc.S.Jezyk){
-                    case POLSKI: Dialog(Gc.gracz.Imie,12,0,"I oto to zyskujesz, gdy dotkniesz tego!");break;
-                    default: Dialog(Gc.gracz.Imie,12,0,"And that's what ya get for touching that!");break;
-                    }
+                    Dialog(Gc.gracz.Imie,12,0,Gc.S.L.get(Tx::Demo_response_UsedCaber));
                     dzwiek_ciagly("Audio_RPG\\Demoman_response_win.wav");
-                    dlacase=false;
+                    Gc.dlacase=false;
                 }
             else{
-            switch (kodwypowiedz)
-            {
-            case 1:
-                switch(Gc.S.Jezyk){
-                    case POLSKI: Dialog(Gc.gracz.Imie,12,0,"Jak ci do tego, balwanie?!");break;
-                    default: Dialog(Gc.gracz.Imie,12,0,"How's that feel ya, blockhead?!");break;
+                switch (kodwypowiedz)
+                {
+                case 1:
+                    Dialog(Gc.gracz.Imie,12,0,Gc.S.L.get(Tx::Demo_response_jeer));
+                    dzwiek_ciagly("Audio_RPG\\Demoman_response_pogarda.wav");
+                    break;
+                case 2:
+                    Dialog(Gc.gracz.Imie,12,0,Gc.S.L.get(Tx::Demo_response_jeer2));
+                    dzwiek_ciagly("Audio_RPG\\Demoman_response_pogarda2.wav");
+                    break;
+                case 3:
+                    Dialog(Gc.gracz.Imie,12,0,Gc.S.L.get(Tx::Demo_response_jeer3));
+                    dzwiek_ciagly("Audio_RPG\\Demoman_response_pogarda3.wav");
+                    break;
+                case 4:
+                    Dialog(Gc.gracz.Imie,12,0,Gc.S.L.get(Tx::Demo_response_laugh));
+                    dzwiek_ciagly("Audio_RPG\\Demoman_response_laugh.wav");
+                    break;
+                case 5:
+                    Dialog(Gc.gracz.Imie,12,0,Gc.S.L.get(Tx::Demo_response_win2));
+                    dzwiek_ciagly("Audio_RPG\\Demoman_reaponse_win2.wav");
+                    break;
+                case 6:
+                    Dialog(Gc.gracz.Imie,12,0,Gc.S.L.get(Tx::Demo_response_dom));
+                    dzwiek_ciagly("Audio_RPG\\Demoman_response_domination.wav");
+                    break;
+                case 7:
+                    Dialog(Gc.gracz.Imie,12,0,Gc.S.L.get(Tx::Demo_response_win));
+                    dzwiek_ciagly("Audio_RPG\\Demoman_response_win3.wav");
+                    break;
+                case 8:
+                    Dialog(Gc.gracz.Imie,12,0,Gc.S.L.get(Tx::Demo_response_laugh));
+                    dzwiek_ciagly("Audio_RPG\\Demoman_response_laugh2.wav");
+                    break;
+                case 9:
+                    Dialog(Gc.gracz.Imie,12,0,Gc.S.L.get(Tx::Demo_response_laugh));
+                    dzwiek_ciagly("Audio_RPG\\Demoman_response_laugh3.wav");
+                    break;
+                case 10:
+                    Dialog(Gc.gracz.Imie,12,0,Gc.S.L.get(Tx::Demo_response_dom2));
+                    dzwiek_ciagly("Audio_RPG\\Demoman_response_domination2.wav");
+                    break;
+                default:
+                    Dialog(Gc.gracz.Imie,12,0,Gc.S.L.get(Tx::Demo_response_glue));
+                    dzwiek_ciagly("Audio_RPG\\Demoman_response_glue.wav");
+                    break;
+                    }
                 }
-                dzwiek_ciagly("Audio_RPG\\Demoman_response_pogarda.wav");
-                break;
-            case 2:
-                switch(Gc.S.Jezyk){
-                    case POLSKI: Dialog(Gc.gracz.Imie,12,0,"Niech to bedzie dla ciebie cho****a nauczka!");break;
-                    default: Dialog(Gc.gracz.Imie,12,0,"Let that be a bloody lesson to yeh!");break;
-                }
-                dzwiek_ciagly("Audio_RPG\\Demoman_response_pogarda2.wav");
-                break;
-            case 3:
-                switch(Gc.S.Jezyk){
-                    case POLSKI: Dialog(Gc.gracz.Imie,12,0,"W waszym jezyku - zryjcie olow, lads'i!");break;
-                    default: Dialog(Gc.gracz.Imie,12,0,"In your language - eat lead, ladies!");break;
-                }
-                dzwiek_ciagly("Audio_RPG\\Demoman_response_pogarda3.wav");
-                break;
-            case 4:
-                switch(Gc.S.Jezyk){
-                    case POLSKI: Dialog(Gc.gracz.Imie,12,0,"(smiech)");break;
-                    default: Dialog(Gc.gracz.Imie,12,0,"(laugh)");break;
-                }
-                dzwiek_ciagly("Audio_RPG\\Demoman_response_laugh.wav");
-                break;
-            case 5:
-                switch(Gc.S.Jezyk){
-                    case POLSKI: Dialog(Gc.gracz.Imie,12,0,"TAK SIE POWINNO TO ROBIC!!!");break;
-                    default: Dialog(Gc.gracz.Imie,12,0,"THAT'S THE WAY YA DO IT!!!");break;
-                }
-                dzwiek_ciagly("Audio_RPG\\Demoman_reaponse_win2.wav");
-                break;
-            case 6:
-                switch(Gc.S.Jezyk){
-                    case POLSKI: Dialog(Gc.gracz.Imie,12,0,"ZDOMINOWANY! (smiech)");break;
-                    default: Dialog(Gc.gracz.Imie,12,0,"DOMINATED! (laugh)");break;
-                }
-                dzwiek_ciagly("Audio_RPG\\Demoman_response_domination.wav");
-                break;
-            case 7:
-                switch(Gc.S.Jezyk){
-                    case POLSKI: Dialog(Gc.gracz.Imie,12,0,"Widzisz? Mowilem, ze sa to niezle sztuki malych sku***elow!");break;
-                    default: Dialog(Gc.gracz.Imie,12,0," See? I told ye they were a buncha' wee lasses!");break;
-                }
-                dzwiek_ciagly("Audio_RPG\\Demoman_response_win3.wav");
-                break;
-            case 8:
-                switch(Gc.S.Jezyk){
-                    case POLSKI: Dialog(Gc.gracz.Imie,12,0,"(smiech)");break;
-                    default: Dialog(Gc.gracz.Imie,12,0,"(laugh)");break;
-                }
-                dzwiek_ciagly("Audio_RPG\\Demoman_response_laugh2.wav");
-                break;
-            case 9:
-                switch(Gc.S.Jezyk){
-                    case POLSKI: Dialog(Gc.gracz.Imie,12,0,"(smiech)");break;
-                    default: Dialog(Gc.gracz.Imie,12,0,"(laugh)");break;
-                }
-                dzwiek_ciagly("Audio_RPG\\Demoman_response_laugh3.wav");
-                break;
-            case 10:
-                switch(Gc.S.Jezyk){
-                    case POLSKI: Dialog(Gc.gracz.Imie,12,0,"(spiewajaco) Wszyscy pyszalkowie podskakuja ze swymi lbami pelnym galek [ocznych]!");break;
-                    default: Dialog(Gc.gracz.Imie,12,0,"(singing) All yah dandies prancin' aboot with ya heads full of eyeballs!");break;
-                }
-                dzwiek_ciagly("Audio_RPG\\Demoman_response_domination2.wav");
-                break;
-            default:
-                switch(Gc.S.Jezyk){
-                    case POLSKI: Dialog(Gc.gracz.Imie,12,0,"Ooo, beda was musieli posklejac klejem z powrotem... W PIEKLE!!!");break;
-                    default: Dialog(Gc.gracz.Imie,12,0,"Oh, they're goin' ta have to glue you back together... IN HELL!!!");break;
-                }
-                dzwiek_ciagly("Audio_RPG\\Demoman_response_glue.wav");
-                break;
-            }
-            }
-            this_thread::sleep_for(chrono::seconds(2));
+            this_thread::sleep_for(ZaWarudo::seconds(2));
             Gc.x++;
+            ReturnToZero(Gc);
+            cout<<endl<<endl<<endl<<endl;
             for (Character* wrog:Gc.enemies){
                 if (wrog!=nullptr) delete wrog;
             }
@@ -2595,14 +1905,13 @@ void ciagla_walka(Gamecontent &Gc,short &Barka_status,bool &CzyBylSklep)
             }
             Gc.wskazany=0;
             for (Character* wrog:Gc.enemies) {
-                    wskazany++;
+                    Gc.wskazany++;
                 if (czyZyje(wrog)==true) {
                     wybor=true;
-
                     narysujScene(Gc);
                 if(wrog->typ==TP::COMMANDER&&kolejComm) continue;
                 else {
-                    ZomTURN(Gc,wrog->odliczanie,wrog);
+                    ZomTURN(Gc,wrog->odliczanie,wrog,*zatyczki);
                     if(wrog->typ==TP::COMMANDER&&!kolejComm) kolejComm=true;
                 }
                 wybor=false;
@@ -2618,15 +1927,14 @@ void ciagla_walka(Gamecontent &Gc,short &Barka_status,bool &CzyBylSklep)
                         int zatrucie=3+(pow(2,Gc.x-1));
                         int maks_zatrucie=Gc.gracz.base_HP*0.1; // maksymalnie 10% HP
                         zatrucie=min(zatrucie, maks_zatrucie);
-                        if (Gc.gracz.HP>=zatrucie) Gc.gracz.HP-=zatrucie;
-                        else Gc.gracz.HP=0;
-                        dzwiek("Audio_RPG\\damage_taken.wav");
+                        DamageResult Poisoning=Gc.gracz.damage(Gc.gracz,zatrucie,CritMode::NONE);
+                        Gc.gracz.PainReact();
                         screen(Gc);
-                        switch(Gc.S.Jezyk){
-                            case POLSKI:cout<<Gc.gracz.Imie<<" doznaje obrazen w wyniku zatrucia.\n";break;
-                            default:cout<<Gc.gracz.Imie<<" suffers from poison.\n";break;
-                        }
-                        this_thread::sleep_for(chrono::seconds(2));
+                        MultiDamageResult TempMDR=nowyMDR({Poisoning});
+                        kiedy_efekt(Gc,TempMDR,Gc.gracz);
+                        if (Poisoning.bitesthedust) return;
+                        cout<<Gc.gracz.Imie<<Gc.S.L.get(Tx::Obj_IsPoisoned)<<endl;
+                        this_thread::sleep_for(ZaWarudo::seconds(2));
                         break;}
                     default: break;
                     }
