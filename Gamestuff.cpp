@@ -111,7 +111,6 @@ void AdvDialog(string Nazwa, int kolor_fontu, int kolor_tla, vector<linijkaD> Kw
     }
 }
 short otrzezwienie=0;
-
 void kiedy_efekt(Gamecontent &Gc,MultiDamageResult &ew, Character &source){
     bool bylCrit=false;
     for (DamageResult &dr:ew.Eksplozja){
@@ -139,13 +138,58 @@ void kiedy_efekt(Gamecontent &Gc,MultiDamageResult &ew, Character &source){
     ew.Eksplozja.clear();
     aktualizuj_efekt(Gc);
 }
-void tag_sklepu(const string &napis,const string &napis2,const int &cena_przedmiotu,const int &var_przedmiotu){
-    short r=5;
-    if (napis.size()>31) r=4;
-    int miejsce=64-(napis.size()+r+7);
-    string spacje="";
-    while (spacje.size()<miejsce) spacje+=" ";
-    cout<<napis<<setw(r)<<right<<cena_przedmiotu<<"\\ "<<(char)177<<setw(7)<<left<<napis2<<var_przedmiotu<<(char)176<<spacje<<(char)186<<"\n";
+string fitText(const std::string& text, std::size_t width)
+{
+    if (text.size() <= width) {
+        return text + std::string(width - text.size(), ' ');
+    }
+
+    if (width <= 3) {
+        return text.substr(0, width);
+    }
+
+    return text.substr(0, width - 3) + "...";
+}
+void tag_sklepu(const std::string& name,const std::string& valueLabel,int price,int value)
+{
+    // Width before the right-hand border character.
+    constexpr std::size_t rowWidth = 76;
+    // Change these values to adjust the layout.
+    constexpr std::size_t nameWidth = 38;
+    constexpr std::size_t gapWidth = 2;
+    constexpr std::size_t priceWidth = 5;
+    constexpr std::size_t valueLabelWidth = 12;
+    constexpr std::size_t valueWidth = 4;
+    constexpr std::size_t separatorWidth =
+        2 + // "\\ "
+        1 + // character 177
+        1;  // character 176
+    constexpr std::size_t usedWidth =
+        nameWidth +
+        gapWidth +
+        priceWidth +
+        separatorWidth +
+        valueLabelWidth +
+        valueWidth;
+    static_assert(usedWidth <= rowWidth);
+
+    const std::size_t trailingWidth = rowWidth - usedWidth;
+
+    std::cout
+        << fitText(name, nameWidth)
+        << std::string(gapWidth, ' ')
+        << std::setw(static_cast<int>(priceWidth))
+        << std::right
+        << price
+        << "\\ "
+        << static_cast<char>(177)
+        << fitText(valueLabel, valueLabelWidth)
+        << std::setw(static_cast<int>(valueWidth))
+        << std::right
+        << value
+        << static_cast<char>(176)
+        << std::string(trailingWidth, ' ');
+        koloruj (15,0);cout<<char(186)<<endl;
 }
 void tagi_akcji(vector<string> Napisy){
     short numer=1;
@@ -502,6 +546,7 @@ Character* dajCel(int numer,const vector<Character*>& enemies) {
 short Barka_status=0;
 void AkcjaMiecz(Gamecontent &Gc,Character* &cel,Eyelander* &miecz){
         dzwiek_ciagly("Audio_RPG\\menu_selecting.wav");
+        aktualizuj_efekt(Gc);
         Gc.gracz.ObecnaAkcja=AK::ACTION1;
         narysujScene(Gc);
         koloruj(11,8);
@@ -1023,12 +1068,12 @@ void Input(short &Barka_status,Gamecontent &Gc,Przedmiot &flashbang,Przedmiot &t
                                 this_thread::sleep_for(ZaWarudo::seconds(3));
                                 for (Character* wrog:Gc.enemies)
                                     wrog->HP=0;
-                               Gc.gracz.ObecnaAkcja==AK::NO_ACTION;
+                               Gc.gracz.ObecnaAkcja=AK::NO_ACTION;
                                 dzwiek("Audio_RPG\\wiwat_uderzenie.wav");
                                 system("cls");
                                 if (czyZyje(Gc.dzialko)){
                                     Gc.dzialko->HP=0;
-                                    Gc.gracz.ObecnaAkcja==AK::NO_ACTION;
+                                    Gc.gracz.ObecnaAkcja=AK::NO_ACTION;
                                     screen(Gc);
                                     koloruj(11,8);
                                     cout<<"BOOOOOOOOOOOOOOM!!!"<<endl<<endl;
@@ -1036,7 +1081,7 @@ void Input(short &Barka_status,Gamecontent &Gc,Przedmiot &flashbang,Przedmiot &t
                                 }
                                 else if (czyZyje(Gc.zasobnik)){
                                     Gc.zasobnik->HP=0;
-                                    Gc.gracz.ObecnaAkcja==AK::NO_ACTION;
+                                    Gc.gracz.ObecnaAkcja=AK::NO_ACTION;
                                     screen(Gc);
                                     koloruj(11,8);
                                     cout<<"BOOOOOOOOOOOOOOM!!!"<<endl<<endl;
@@ -1045,7 +1090,7 @@ void Input(short &Barka_status,Gamecontent &Gc,Przedmiot &flashbang,Przedmiot &t
                                 else{
                                 screen(Gc);
                                 koloruj(11,8);
-                                Gc.gracz.ObecnaAkcja==AK::NO_ACTION;
+                                Gc.gracz.ObecnaAkcja=AK::NO_ACTION;
                                 cout<<"BOOOOOOOOOOOOOOM!!!"<<endl;}
                                 cout<<"\n"<<Gc.gracz.Imie<<Gc.S.L.get(Tx::Caber_result)<<endl;
                                 koloruj(7,0);

@@ -646,9 +646,9 @@ char aura(int w, int i, int j, int wskazany, Gamecontent &Gc, bool smigniecie)
 }
 char vomit(int w, int i, int j, int wskazany, vector<Character*> &enemies)// YOU ARE WALKING VOMIT!!!
 {
-        auto it=find_if(enemies.begin(),enemies.end(),[](const auto &enemy){return enemy->typ==TP::TOKSYCZNY;});\
+        auto it=find_if(enemies.begin(),enemies.end(),[](const auto &enemy){return enemy!=nullptr&&enemy->typ==TP::TOKSYCZNY&&czyZyje(enemy);});
         Character *IT=*it;
-        if(it==enemies.end()||!czyZyje(IT)) return ' ';
+        if(it==enemies.end()) return ' ';
         int idx=distance(enemies.begin(),it);
         if(IT->ObecnaAkcja!=AK::ACTION1)return ' ';
         int basepos_J=33+idx*10;
@@ -962,9 +962,9 @@ char rysujwroga(int w, int i, int j,Gamecontent &Gc)
 }
 char electric(int w,int i,int j,int wskazany, vector<Character*> &enemies)
 {
-    auto it=find_if(enemies.begin(),enemies.end(),[](const auto &enemy){return enemy->typ==TP::NALADOWANY;});
+    auto it=find_if(enemies.begin(),enemies.end(),[](const auto &enemy){return enemy!=nullptr&&enemy->typ==TP::NALADOWANY&&czyZyje(enemy);});
     Character *IT=*it;
-    if (it==enemies.end()||!czyZyje(IT)) return ' ';
+    if (it==enemies.end()) return ' ';
     int idx=distance(enemies.begin(),it);
     int basepos_J=13;
     int endJ=29+(idx*10);
@@ -1021,9 +1021,9 @@ char electric(int w,int i,int j,int wskazany, vector<Character*> &enemies)
     return ' ';
 }
 char Exploder(int w,int i,int j,vector<Character*> &enemies){
-    auto it=find_if(enemies.begin(),enemies.end(),[](const auto &enemy){return enemy->typ==TP::EXPLODER;});
+    auto it=find_if(enemies.begin(),enemies.end(),[](const auto &enemy){return enemy!=nullptr&&enemy->typ==TP::EXPLODER&&czyZyje(enemy);});
     Character *IT=*it;
-    if(!czyZyje(IT)||it==enemies.end()) return ' ';
+    if(it==enemies.end()) return ' ';
     if(IT->ObecnaAkcja==AK::SPECIAL){
         koloruj(4,4);
         return char(176);

@@ -280,8 +280,10 @@ void story()//historyjka
             }
     }
 }
+
 int main()
 {
+    configureConsoleInput();
     debug=false;
     UstawTekst(S.WCzcionki,S.WCzcionki);
     system("mode con cols=102 lines=60");

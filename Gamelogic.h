@@ -171,4 +171,5 @@ void koloruj(int fg,int bg);
 void ReturnToZero(Gamecontent& Gc);
 void aktualizuj_efekt(Gamecontent &Gc);
 MultiDamageResult nowyMDR(std::vector<DamageResult> multi);
+void configureConsoleInput();
 #endif // GAMELOGIC_H_INCLUDED

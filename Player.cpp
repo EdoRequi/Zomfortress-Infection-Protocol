@@ -487,7 +487,7 @@ char Demo_special_Caber(int relI,int relJ,Player &source){
             {
                 case 1 ... 4:
                     return '_';
-                case 6:
+                case 7:
                     koloruj(12,8);
                     return '|';
                 default:
@@ -535,7 +535,7 @@ char rysujgracza(int w, int i, int j,Gamecontent &Gc)
                if (Gc.gracz.Klasa==TypRoli::DEMOMAN){
                 int relI=i-(w-10); if(relI<0||relI>=10) return ' ';
                 int relJ=j-4;
-                if(czyZyje(Gc.dzialko)||czyZyje(Gc.zasobnik)) relJ+=27;
+                if(czyZyje(Gc.dzialko)||czyZyje(Gc.zasobnik)) relJ-=27;
                 char c=sword_pulled(relI,relJ,Gc.gracz);
                 return c;
                }
@@ -544,7 +544,7 @@ char rysujgracza(int w, int i, int j,Gamecontent &Gc)
                 if (Gc.gracz.Klasa==TypRoli::DEMOMAN){
                 int relI=i-(w-8); if(relI<0||relI>=8) return ' ';
                 int relJ=j-4;
-                if(czyZyje(Gc.dzialko)||czyZyje(Gc.zasobnik)) relJ-=3;
+                if(czyZyje(Gc.dzialko)||czyZyje(Gc.zasobnik)) relJ+=3;
                 char c=SBL_pulled(relI,relJ,Gc.gracz);
                 return c;
                 }
@@ -552,7 +552,7 @@ char rysujgracza(int w, int i, int j,Gamecontent &Gc)
             case AK::SPECIAL:{
                 if (Gc.gracz.Klasa==TypRoli::DEMOMAN){
                 int relI=i-(w-9); if(relI<0||relI>=9) return ' ';
-                int relJ=j-38;
+                int relJ=j-30;
                 char c=Demo_special_Caber(relI,relJ,Gc.gracz);
                 return c;
                 }
