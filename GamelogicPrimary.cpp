@@ -31,10 +31,10 @@ MultiDamageResult nowyMDR(vector<DamageResult> multi){
 }
 void configureConsoleInput()
 {
-    HANDLE input = GetStdHandle(STD_INPUT_HANDLE);
+    HANDLE h = GetStdHandle(STD_INPUT_HANDLE);
 
     DWORD mode = 0;
-    if (!GetConsoleMode(input, &mode)) {
+    if (!GetConsoleMode(h, &mode)) {
         return;
     }
 
@@ -42,7 +42,7 @@ void configureConsoleInput()
     mode &= ~ENABLE_QUICK_EDIT_MODE;
     mode &= ~ENABLE_MOUSE_INPUT;
 
-    SetConsoleMode(input, mode);
+    SetConsoleMode(h, mode);
 
-    FlushConsoleInputBuffer(input);
+    FlushConsoleInputBuffer(h);
 }

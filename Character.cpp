@@ -67,7 +67,7 @@ Character* generujZombie(long x,unsigned int &lok_HP_wrog,const bool CV,const Lo
             //jedn = new Character(TP::ZWYKLY,"TEST", health, health, 20+(x * 2), x * 0.8, 0, 1, false,0.005,1);
             //jedn = new Character(TP::TOKSYCZNY,"Toksyczny Zombie", health, health, 20+(x * 2), x * 0.8, 0, 1, false,0.005);
             //jedn=new Character("Zombie Samobojca",health, health,9999, x*1.2, 0,1,false,0.005,3);
-            //jedn=new Character("Naladowany Zombie",health, health, 25+(x*1.7), x*1, 10,2,false,0.01);
+            //jedn=new Character(TP::NALADOWANY,"Naladowany Zombie",health, health, 0+(x*1.7), x*1, 5,2,false,0.01);
             break;
         case 2 ... 5:{
             switch (losujszablon){

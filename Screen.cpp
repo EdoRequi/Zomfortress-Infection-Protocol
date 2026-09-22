@@ -960,63 +960,92 @@ char rysujwroga(int w, int i, int j,Gamecontent &Gc)
     }
         return ' ';
 }
-char electric(int w,int i,int j,int wskazany, vector<Character*> &enemies)
+char electric(int w,int i,int j, Gamecontent &Gc)
 {
-    auto it=find_if(enemies.begin(),enemies.end(),[](const auto &enemy){return enemy!=nullptr&&enemy->typ==TP::NALADOWANY&&czyZyje(enemy);});
-    Character *IT=*it;
-    if (it==enemies.end()) return ' ';
-    int idx=distance(enemies.begin(),it);
-    int basepos_J=13;
-    int endJ=29+(idx*10);
-    if (j<basepos_J||j>endJ&&IT->ObecnaAkcja!=AK::SPECIAL) return ' ';
-    // Rysowanie zalezne od pozycji i (wiersza) i j (kolumny)
-    int relJ=j-basepos_J;
-    int relI=i-(w-6);
-    if(relI<=i-(w-2)&&IT->ObecnaAkcja!=AK::SPECIAL) return ' ';
-    switch (IT->ObecnaAkcja){
-        case AK::ACTION1:{
-            switch(relI){
+    for (size_t idx=0;idx<Gc.enemies.size();idx++){
+        if(Gc.enemies[idx]==nullptr||Gc.enemies[idx]->typ!=TP::NALADOWANY) continue;
+        switch(Gc.enemies[idx]->ObecnaAkcja){
+        case AK::ACTION1:
+            {
+                int basepos=13;
+                int endpos=29+(idx*10);
+                int relJ=j-basepos;
+                int relI=i-(w-7);
+                if(relI<0||relI>7||relJ<0||relJ>endpos) continue;
+                switch(relI){
                 case 0:{
                     switch(relJ){
-                        case 2:case 4:case 7:case 13:case 20:case 23:case 31:case 34:case 37:case 40:case 43: case 46:case 49: koloruj(14,8);return (char)220;
-                        case 5:case 6:case 11:case 12:case 17:case 22:case 30:case 33:case 36:case 39:case 42: case 45:case 48: koloruj(14,8);return (char)223;
-                        case 16:case 21: koloruj(14,8);if (rand()%3==0)return (char)177;
-                        else return (char)219;
-                        default: koloruj(8,8);return ' ';
+                    case 0:case 1: case 18:
+                        koloruj(14,8);
+                        return (rand()%3==0)?static_cast<char>(177):static_cast<char>(219);
+                    case 14: case 15:
+                        koloruj(14,8);
+                        return char(220);
+                    default: return ' ';
                     }
                 break;}
                 case 1:{
                     switch(relJ){
-                        case 0:case 3:case 8:case 12:case 14:case 17:case 19:case 21:case 24: koloruj(14,8);if (rand()%6==0)return (char)177;
-                        else return (char)219;
-                        case 9:case 10:case 16:case 18:case 25:case 27:case 30:case 32:case 34:case 36:case 38:case 40:case 42:case 44:case 46:case 48:case 50:case 52: koloruj(14,8);return (char)220;
-                        case 28:case 29:case 31:case 33:case 35:case 37:case 39:case 41:case 43:case 45:case 47:case 49:case 51: koloruj(14,8);return (char)223;
-                        default: koloruj(8,8);return ' ';
+                    case 4:case 7:
+                    case 13: case 20: case 24:
+                    case 26:case 27:
+                    case 31:case 32:case 37:case 38:case 43:case 44:case 49:case 50:case 55:case 56:case 61:case 62:case 67:case 68:
+                    case 40:case 46:case 52:
+                        koloruj(14,8);
+                    return char(220);
+                    case 1:case 5:case 6:case 11:case 12:
+                    case 17:case 23:case 30:
+                        koloruj(14,8);
+                        return char(223);
+                    case 2:case 16:case 21:case 22:case 33:case 60:
+                        koloruj(14,8);
+                        return (rand()%3==0)?static_cast<char>(177):static_cast<char>(219);
+                    default:
+                        return ' ';
                     }
-                break;}
+                    break;}
                 case 2:{
-                    switch(relJ){
-                        case 1:case 2:case 11:case 15: koloruj(14,8);return (char)223;
-                        case 7:case 21:case 26: koloruj(14,8);if (rand()%4==0)return (char)177; else return (char)219;
-                        default: koloruj(8,8);return ' ';
+                    switch (relJ){
+                    case 0:case 3:case 8:case 12:case 14:case 17:case 19:case 21:case 24:case 27:
+                    case 29:case 30:case 33:case 36:case 39:case 42:case 45:case 48:case 51:case 54:case 57:case 60:case 63:case 66:case 69:case 72:
+                        koloruj(14,8);
+                        return char(219);
+                    case 9:case 10:case 16:case 18:case 25:
+                        koloruj(14,8);
+                    return char(220);
+                    default: return ' ';
                     }
                 break;}
                 case 3:{
                     switch(relJ){
-                        case 5:case 6:case 19:case 24:case 25: koloruj(14,8);return (char)223;
-                        case 20: koloruj(14,8);if (rand()%2==0)return (char)177; else return (char)219;
-                        case 23: koloruj(14,8);return (char)220;
-                        default: koloruj(8,8);return ' ';
-                        }
+                    case 1:case 2:case 11:case 15:case 34:case 35:case 40:case 41:case 46:case 47:case 52:case 53:case 58:case 59:case 64:case 65:case 70:case 71:
+                    case 61:
+                        koloruj(14,8);
+                        return char(223);
+                    case 7:case 21: case 26: case 28:
+                        koloruj (14,8);
+                        return char(219);
+                    default: return ' ';
+                    }
                 break;}
-                default: koloruj(8,8);return ' ';
-            }
+                case 4:{
+                    switch(relJ){
+                    case 5: case 20:
+                        koloruj(14,8);
+                        return (rand()%3==0)?static_cast<char>(177):static_cast<char>(219);
+                    case 6:case 19:case 24:case 25:case 28:
+                        koloruj(14,8);
+                    return char(223);
+                    case 23:case 29:
+                        koloruj(14,8);
+                        return char(220);
+                    default: return ' ';
+                    }
+                break;}
+                }
+
+            break;}
         }
-        case AK::ACTION2:{break;}
-        case AK::SPECIAL:{
-            koloruj(14,11);
-            return (char)177;
-        break;}
     }
     return ' ';
 }
@@ -1050,7 +1079,7 @@ char screen_char_at(int i, int j,Gamecontent &Gc) {
         }
     }
     c = aura(w,i,j,Gc.wskazany,Gc,Gc.smigniecie);if(c!=' ') return c;
-    c = electric(w,i,j,Gc.wskazany,Gc.enemies);if(c!=' ') return c;
+    c = electric(w,i,j,Gc);if(c!=' ') return c;
     c = Exploder(w,i,j,Gc.enemies);if(c!=' ')
     c = vomit(w,i,j,Gc.wskazany,Gc.enemies); if (c!=' ') return c;
     c = rysujgracza(w,i,j,Gc); if (c!=' ') return c;

@@ -16,7 +16,7 @@ char vomit(int w, int i, int j, int wskazany, std::vector<Character*> &enemies);
 std::vector<int> PozBomby(int relJ,int l_bomb);
 char bomby(int w,int i,int j,Gamecontent &Gc);
 char rysujwroga(int w, int i, int j,Gamecontent &Gc);
-char electric(int w,int i,int j,int wskazany, std::vector<Character*> &enemies);
+char electric(int w,int i,int j, Gamecontent &Gc);
 char Exploder(int w,int i,int j,std::vector<Character*> &enemies);
 void pokazStatystyki(const Character* postac,const std::string& etykieta,Gamecontent &Gc);
 void przesunKursorNaGore();

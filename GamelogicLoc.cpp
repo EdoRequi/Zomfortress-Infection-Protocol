@@ -164,7 +164,7 @@ std::string Localization::get(TextID id)const{
             case Tx::Toxic_Spit: return " pluje jadem na ";
             case Tx::Toxic_PoisonSuccess: return "Zostales Zatruty! Od teraz przez 3 rundy bedzie ci spadac zdrowie!";
             case Tx::Toxic_PoisonFails: return " juz jest zatruty - zatrucie nie dziala.";
-            case Tx::Elec_StrengthCast: return  "przekazuje POZYTYWNY FLUID ENERGETYCZNY pozostalym zombie";
+            case Tx::Elec_StrengthCast: return  " przekazuje POZYTYWNY FLUID ENERGETYCZNY pozostalym zombie";
             case Tx::Elec_Overdrive: return " wyladowuje ENERGETYCZNY OVERDRIVE!!";
             case Tx::Elec_Attack: return " oddaje elektryczny atak.";
             case Tx::Expl_Counter: return "R. do wybuchhu: ";

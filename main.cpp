@@ -43,7 +43,7 @@ void ustawienia(bool &debug,Settings &S)
         cout<<S.L.get(Tx::Sw_ENDEBUG)<<setw(10)<<left<<(debug==true?"ENABLED *":"DISABLED *")<<"                          "<<endl<<endl;
         cout<<S.L.get(Tx::Sw_FONTSIZE)<<setw(4)<<left<<S.WCzcionki<<"+/-                       "<<endl<<endl;
         cout<<" PRESS ALT+F4 FOR FREE ROBUX"<<endl;//easter egg
-        cout<<"VERSION: INDEV 0.3"<<endl;
+        cout<<"VERSION: INDEV 0.3.1"<<endl;
         cout<<S.L.get(Tx::X_for_exit)<<"                                     ";
         ust=_getch();
         switch (ust){
