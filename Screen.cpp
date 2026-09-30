@@ -644,72 +644,82 @@ char aura(int w, int i, int j, int wskazany, Gamecontent &Gc, bool smigniecie)
     }
     return ' ';
 }
-char vomit(int w, int i, int j, int wskazany, vector<Character*> &enemies)// YOU ARE WALKING VOMIT!!!
+char vomit(int w, int i, int j, Gamecontent &Gc)// YOU ARE WALKING VOMIT!!!
 {
-        auto it=find_if(enemies.begin(),enemies.end(),[](const auto &enemy){return enemy!=nullptr&&enemy->typ==TP::TOKSYCZNY&&czyZyje(enemy);});
-        Character *IT=*it;
-        if(it==enemies.end()) return ' ';
-        int idx=distance(enemies.begin(),it);
-        if(IT->ObecnaAkcja!=AK::ACTION1)return ' ';
-        int basepos_J=33+idx*10;
-        if (j<basepos_J||j>basepos_J+12) return ' ';
+        for (int idx=0;idx<Gc.enemies.size();idx++){
+        if(Gc.enemies[idx]==nullptr||Gc.enemies[idx]->typ!=TP::TOKSYCZNY||!czyZyje(Gc.enemies[idx])) continue;
+        if(Gc.enemies[idx]->ObecnaAkcja!=AK::ACTION1) continue;
+        int basepos_J=20+idx*10;
              // Rysowanie zalezne od pozycji i (wiersza) i j (kolumny)
         int relJ=j-basepos_J;
-        int relI=i-(w-11);
-        if(relI<=i-(w-6)) return ' ';
+        if(relJ<0||relJ>30) continue;
+        int relI=i-(w-12);
+        if(relI<0||relI>6) continue;
         switch(relI){
                 case 0:{
                     switch(relJ){
-                    case 1:case 2:case 4:case 5:case 6: koloruj(14,14);return (char)219;
-                    case 3: koloruj(10,14);return (char)176;
-                    case 8: koloruj(14,8);return (char)176;
+                    case 6:case 7:case 8:case 9:case 10:case 11:case 12:case 13: koloruj(14,14);return (char)219;
+                    case 3:case 4:case 5: koloruj(10,14);return (char)176;
+                    case 14: koloruj(14,8);return (char)176;
                     default: return ' ';
                     }
                     break;}
                 case 1:{
                     switch(relJ){
-                    case 0: koloruj(14,14);return (char)219;
-                    case 1:case 2:koloruj (10,2);return (char)178;
-                    case 3:case 4:case 5:case 6:case 7: koloruj(2,10);return (char)177;
-                    case 8: koloruj(14,14);return (char)219;
-                    case 9: koloruj(14,8);return (char)177;
+                    case 1:case 2:case 13:case 14:case 15:case 16:case 17: koloruj(14,14);return (char)219;
+                    case 3:case 4:case 5: koloruj (10,2);return (char)178;
+                    case 6:case 7:case 8:case 9:case 10:case 11:case 12: koloruj(2,10);return (char)177;
+                    case 18: koloruj(14,8);return (char)177;
                     default: return ' ';
                     }
                     break;}
                 case 2:{
                     switch(relJ){
-                    case 1:case 2:case 3: koloruj(14,14);return (char)219;
-                    case 4:case 5: koloruj(2,14);return(char)177;
-                    case 6:case 7:case 8:case 9: koloruj(2,10);return (char)177;
-                    case 10: koloruj(14,14);return (char)219;
-                    case 12: koloruj(14,8);return (char)177;
+                    case 17:case 18:case 19:koloruj(14,14);return (char)219;
+                    case 0:case 1: koloruj(2,14);return(char)177;
+                    case 2:case 3:case 4:case 5:case 6:case 7:case 8:case 9:case 10:case 11:case 12:case 13:case 14:case 15:case 16: koloruj(2,10);return (char)177;
+                    case 20: koloruj(14,8);return (char)177;
                     default: return ' ';
                     }
                     break;}
                 case 3:{
                     switch(relJ){
-                    case 5: koloruj(14,8);return (char)176;
-                    case 6:case 7:case 11: koloruj(2,14);return (char)176;
-                    case 8:case 9:case 10: koloruj(2,10);return (char)177;
+
+                    case 0: koloruj(2,14);return (char)176;
+                    case 1:case 2:case 3:case 4:case 5:case 6:case 7:case 8:case 9:case 10:case 11:case 12:case 13:
+                    case 14:case 15:case 16:case 17: case 18:case 19:koloruj(2,10);return (char)177;
+                    case 20:case 21: koloruj(14,14); return (char)219;
+                    case 22: koloruj(14,8);return (char)176;
                     default: return ' ';
                     }
                     break;}
                 case 4:{
                     switch(relJ){
-                    case 8:case 12: koloruj(14,14);return (char)219;
-                    case 11:case 9: case 10: koloruj(2,10);return (char)177;
+                    case 0:case 5:case 6:case 13: koloruj(2,14);return (char)176;
+                    case 1:case 2:case 3:case 4:
+                    case 14:case 15:case 16:case 17:case 18:case 19:case 20:case 21: koloruj(2,10);return (char)177;
+                    case 22:case 23: koloruj(14,14);return (char)219;
+                    case 24: koloruj(14,8);return (char)177;
                     default: return ' ';
                     }
                     break;}
                 case 5:{
                     switch(relJ){
-                    case 10: koloruj(14,14);return (char)219;
-                    case 11:case 12: koloruj(2,10);return (char)177;
+                    case 1:case 2:case 3:case 4: case 13 ... 19: koloruj(2,14);return (char)176;
+                    case 20 ... 23: koloruj(2,10);return (char)177;
+                    case 24: koloruj(14,14);return (char)219;
+                    }
+                    break;}
+                case 6:{
+                    switch(relJ){
+                    case 20:case 21: koloruj(14,14);return (char)219;
+                    case 22:case 23:case 24:case 25: koloruj(2,10);return (char)177;
                     default: return ' ';
                     }
                     break;}
                 default: return ' ';
         }
+    }
     return ' ';
 }
 vector<int> PozBomby(int relJ,int l_bomb){
@@ -1080,8 +1090,8 @@ char screen_char_at(int i, int j,Gamecontent &Gc) {
     }
     c = aura(w,i,j,Gc.wskazany,Gc,Gc.smigniecie);if(c!=' ') return c;
     c = electric(w,i,j,Gc);if(c!=' ') return c;
-    c = Exploder(w,i,j,Gc.enemies);if(c!=' ')
-    c = vomit(w,i,j,Gc.wskazany,Gc.enemies); if (c!=' ') return c;
+    c = vomit(w,i,j,Gc); if (c!=' ') return c;
+    c = Exploder(w,i,j,Gc.enemies);if(c!=' ') return c;
     c = rysujgracza(w,i,j,Gc); if (c!=' ') return c;
     c = bomby(w,i,j,Gc); if (c!=' ') return c;
     c = rysuj_dzialko(w,i,j,Gc); if (c!=' ') return c;
@@ -1165,7 +1175,7 @@ void narysujScene(Gamecontent &Gc){
     if (Gc.debug==true){
         for(auto wrog:Gc.enemies)
         {
-            cout<<Gc.S.L.get(Tx::Deb_info_EnAdress)<<wrog<<endl;
+            cout<<Gc.S.L.get(Tx::Deb_info_EnAdress)<<wrog<<"| ACTION: "<<static_cast<int>(wrog->ObecnaAkcja)<<endl;
         }
     }
     koloruj(0,4);

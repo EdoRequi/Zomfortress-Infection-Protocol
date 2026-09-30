@@ -12,7 +12,7 @@ char efekt_napis(Gamecontent &Gc,Character* &cel, int w,int i,int j,char cyfra);
 char rysuj_dzialko(int w,int i,int j,Gamecontent &Gc);
 char rysuj_zasobnik(int w,int i,int j,Gamecontent &Gc);
 char aura(int w,int i,int j,short e,int wskazany,std::vector<Character*> &enemies,bool smigniecie);
-char vomit(int w, int i, int j, int wskazany, std::vector<Character*> &enemies);
+char vomit(int w, int i, int j, Gamecontent &Gc);
 std::vector<int> PozBomby(int relJ,int l_bomb);
 char bomby(int w,int i,int j,Gamecontent &Gc);
 char rysujwroga(int w, int i, int j,Gamecontent &Gc);
