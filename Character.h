@@ -14,29 +14,21 @@ using Tx=TextID;
 using AK=TypAkcji;
 extern int liczba_wrogow;
 extern unsigned int base_HP_wrog;
+template <typename P>
+bool czyZyje(const P& postac) {
+    // Sprawdzanie, czy typ zachowuje sie jak wskaznik
+    if constexpr (std::is_pointer_v<P>) {
+        return postac != nullptr && postac->HP > 0;
+    } else {
+        return postac.HP > 0;
+    }
+}
 struct Przedmiot;
 extern bool debug;
 void koloruj(int fg,int bg);
 extern bool czy_crit(double critrate);
 int Los(int M,int m);
-extern bool czyZyje(const Character* ch);
-extern bool czyZyje(const Character &ch);
 void SprawdzZIndeksem(Character* C, const std::vector<Character*>& enemies,int &wskazany);
-enum TypPostaci {
-    None,
-
-    GRACZ,
-    DZIALKO,
-    ZASOBNIK,
-
-    ZWYKLY,
-    SZYBKI,
-    TYTANOWY,
-    TOKSYCZNY,
-    NALADOWANY,
-    EXPLODER,
-    COMMANDER
-};
 enum TypEfektu{
     NA,
 
@@ -72,7 +64,6 @@ struct StatusEfekt
         }
     }
 };
-void tag_efektu(const std::string &napis,int kolor_f,int kolor_b);
 struct Character
 {
     TypPostaci typ;
@@ -109,42 +100,6 @@ struct Character
         //jezeli ktorykolwiek z nalozonych efektow przyjmie wartosc aktywny==false, ustaw na sam koniec i usun
         efekty.erase(std::remove_if(efekty.begin(),efekty.end(),[](const StatusEfekt& e) {return!e.aktywny;}),efekty.end());
     }
-    void wypiszEfekty()const
-    {
-        bool maefekty=false;
-        for (const auto& efekt:efekty) {
-            if (efekt.aktywny==true){
-                maefekty=true;
-                switch (efekt.ID)
-                {
-                case OGLUSZENIE:{
-                    tag_efektu(L.get(Tx::Eff_Stun),15,12);
-                    break;}
-                case UPICIE:{
-                    tag_efektu(L.get(Tx::Eff_Drunk),3,12);
-                    break;}
-                case WZMOCNIENIE:{
-                    tag_efektu(L.get(Tx::Eff_Powered),14,12);
-                    break;}
-                case ZATRUCIE:{
-                    tag_efektu(L.get(Tx::Eff_Poisoned),10,12);
-                    break;}
-                case OSLABIENIE:{
-                    tag_efektu(L.get(Tx::Eff_Weakness),13,12);
-                    break;}
-                case KRYTOWANIE:{
-                    tag_efektu(L.get(Tx::Eff_MoreCritrate),11,12);
-                    break;}
-                default:
-                    std::cout<<L.get(Tx::Error_info);break;
-
-                }
-                }
-            }
-            if (!maefekty)
-            std::cout<<std::endl;
-        }
-
     void heal(Character &target,int ilosc){
         if(target.HP+ilosc<=target.base_HP) target.HP+=ilosc;
         else target.HP=target.base_HP;

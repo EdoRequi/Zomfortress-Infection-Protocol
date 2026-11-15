@@ -8,6 +8,8 @@
 #include "Character.h"
 #include "ItemManagement.h"
 #include "Screen.h"
+#include "TextManagement.h"
+
 struct Przedmiot;
 extern bool smigniecie;
 extern bool CzyBylSklep;
@@ -25,15 +27,6 @@ enum class DamageTyp{
 
 };
 int Los(int M,int m);
-struct linijkaD{
-    std::string S;
-    int czas;
-    const char* path;
-};
-void Barka(Gamecontent &Gc);
-void usunprzedzial(std::string &s,int I);
-void Dialog(std::string Nazwa, int kolor_fontu,int kolor_tla, std::string S);
-void AdvDialog(std::string Nazwa, int kolor_fontu, int kolor_tla, std::vector<linijkaD> Kwestie);
 void panele(Gamecontent &Gc,Przedmiot &flashbang,Przedmiot &tel,Przedmiot &zatyczki); //graficzne
 void ofensywa_wybrana(Gamecontent &Gc);
 void wsparcie_wybrane(Gamecontent &Gc);

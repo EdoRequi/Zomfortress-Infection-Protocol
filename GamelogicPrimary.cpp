@@ -37,7 +37,6 @@ void configureConsoleInput()
     if (!GetConsoleMode(h, &mode)) {
         return;
     }
-
     mode |= ENABLE_EXTENDED_FLAGS;
     mode &= ~ENABLE_QUICK_EDIT_MODE;
     mode &= ~ENABLE_MOUSE_INPUT;

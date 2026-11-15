@@ -11,22 +11,13 @@ using Tx=TextID;
 class Localization;
 int liczba_wrogow=1;
 unsigned int base_HP_wrog=150;
-bool czyZyje(const Character* ch){
-    return ch!=nullptr&&ch->HP>0;
-}
-bool czyZyje(const Character &ch){
-    return ch.HP>0;
-}
+
 void SprawdzZIndeksem(Character* C, const std::vector<Character*>& enemies,int &wskazany){
     for (int r=0;r<enemies.size();r++){
         if (enemies[r]==C&&czyZyje(C)){
             wskazany=r+1;
         }
     }
-}
-void tag_efektu(const string &napis,int kolor_f,int kolor_b){
-    int miejsce=30-napis.size();
-    std::cout<<"|";koloruj(kolor_f,kolor_b);std::cout<<napis<<std::setw(miejsce)<<std::right;std::cout<<" ";koloruj(15,0);std::cout<<"|\n";
 }
 void Player::dodajwyposazeniestartowe(const Localization &L){
     switch(Klasa){
@@ -61,11 +52,11 @@ Character* generujZombie(long x,unsigned int &lok_HP_wrog,const bool CV,const Lo
         {
         case 1:
             health=lok_HP_wrog;
-            //jedn = new Character(TP::ZWYKLY,"Zombie", health, health, 20+(x * 2), x * 0.8, 0, 1, false,0.005,0.1);
+            jedn = new Character(TP::ZWYKLY,"Zombie", health, health, 20+(x * 2), x * 0.8, 0, 1, false,0.005,0.1);
             //NOTA: TEN TEKST SLUZYL DO TESTOW
             //if(!CV) jedn=new Character(TP::COMMANDER,"Zombie Dowodca",health,health,50+(x*2),x*2,0,2,false,0.02,0.01);
             //jedn = new Character(TP::ZWYKLY,"TEST", health, health, 20+(x * 2), x * 0.8, 0, 1, false,0.005,1);
-            jedn = new Character(TP::TOKSYCZNY,"Toksyczny Zombie", health, health, 20+(x * 2), x * 0.8, 0, 1, false,0.005);
+            //jedn = new Character(TP::TOKSYCZNY,"Toksyczny Zombie", health, health, 20+(x * 2), x * 0.8, 0, 1, false,0.005);
             //jedn=new Character("Zombie Samobojca",health, health,9999, x*1.2, 0,1,false,0.005,3);
             //jedn=new Character(TP::NALADOWANY,"Naladowany Zombie",health, health, 0+(x*1.7), x*1, 5,2,false,0.01);
             break;
@@ -188,7 +179,7 @@ void nowyWrog(Gamecontent &Gc, unsigned int &base_HP_wrog)
         Gc.enemies.push_back(jedn);
         if (debug==true){
             cout << "Created enemy[" << IDX << "] | address: " <<jedn<<" | HP: " <<jedn->HP<<" | DEF: "<<jedn->DEF<<" | TYPE: "<<jedn->typ<<'\n';
-            this_thread::sleep_for(chrono::milliseconds(500));
+            this_thread::sleep_for(chrono::milliseconds(100));
         }
         for (const Character* wrog:Gc.enemies){
     // Dostosowanie base_HP_wrog do najnizszego HP wroga(jesli jest)
@@ -201,7 +192,7 @@ void nowyWrog(Gamecontent &Gc, unsigned int &base_HP_wrog)
         if (Gc.debug==true){
             cout<<L.get(Tx::Deb_gen)<<Gc.enemies.size()<<" zombie\n";
             cout<<L.get(Tx::Deb_highest_localHP)<< base_HP_wrog<<endl;
-            this_thread::sleep_for(chrono::seconds(3));
+            this_thread::sleep_for(chrono::seconds(2));
         }
 }
 void noweDzialko(long x,Character* &dzialko, const Localization &L)

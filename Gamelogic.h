@@ -4,7 +4,6 @@
 #include <memory>
 #include <chrono>
 #include <sstream>
-
 namespace std{
     namespace ZaWarudo=chrono;
 }
@@ -12,6 +11,21 @@ inline short IDwybor=0;
 inline short WCzcionki=14;
 struct NonLivingObject{
     virtual ~NonLivingObject()=default;
+};
+enum TypPostaci {
+    None,
+
+    GRACZ,
+    DZIALKO,
+    ZASOBNIK,
+
+    ZWYKLY,
+    SZYBKI,
+    TYTANOWY,
+    TOKSYCZNY,
+    NALADOWANY,
+    EXPLODER,
+    COMMANDER
 };
 enum class Globalne{
     NONE,
@@ -167,6 +181,7 @@ struct Gamecontent{
     std::chrono::steady_clock::time_point &CzasTrwania;
 
 };
+void Barka(Gamecontent &Gc);
 void koloruj(int fg,int bg);
 void ReturnToZero(Gamecontent& Gc);
 void aktualizuj_efekt(Gamecontent &Gc);

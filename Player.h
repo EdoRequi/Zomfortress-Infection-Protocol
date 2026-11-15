@@ -4,7 +4,7 @@
 #pragma once
 #include "Gamelogic.h"
 #include "Character.h"
-struct Player : Character{
+struct Player : public Character{
     TypRoli Klasa;
     std::vector<std::unique_ptr<Przedmiot>> Ekwipunek;
     Player(TypPostaci t,const std::string &im,unsigned int hp,unsigned int basehp,int atk,long exp,int sp,int def,TypRoli klasa,bool doubleatk=false,double mr=0.0,double cr=0.0,short cd=-1, TypAkcji oa=AK::NO_ACTION)

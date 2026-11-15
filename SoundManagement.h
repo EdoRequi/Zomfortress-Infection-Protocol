@@ -1,18 +1,10 @@
 #ifndef SOUNDMANAGEMENT_H
 #define SOUNDMANAGEMENT_H
 #include <windows.h>
+#pragma once
+enum class TextID;
 //dziwekowe
-inline void dzwiek(const char* sciezka)
-{
-    PlaySound(TEXT(sciezka),NULL,SND_FILENAME| SND_ASYNC);
-}
-inline void dzwiek_loop(const char* sciezka)
-{
-    PlaySound(TEXT(sciezka),NULL,SND_FILENAME| SND_LOOP | SND_ASYNC);
-}
-inline void dzwiek_ciagly(const char* sciezka)
-{
-    PlaySound(TEXT(sciezka),NULL,SND_FILENAME| SND_SYNC);
-}
-
+void dzwiek(const char* sciezka);
+void dzwiek_loop(const char* sciezka);
+void dzwiek_ciagly(const char* sciezka);
 #endif // SOUNDMANAGEMENT_H_INCLUDED

@@ -67,9 +67,9 @@ std::string Localization::get(TextID id)const{
             case Tx::Name_Engineer: return "Inzynier";
             //tagi
             case Tx::Tag_direction_Info: return "Zombie otagowane od lewej do prawej!           ";
-            case Tx::Tag_PLAYER: return "GRACZ";
-            case Tx::Tag_BUILD: return "BUDOWLA";
-            case Tx::Tag_ENEMY: return "WROG";
+            case Tx::Tag_PLAYER: return " GRACZ";
+            case Tx::Tag_BUILD: return " BUDOWLA";
+            case Tx::Tag_ENEMY: return " WROG";
             //napisy gry
             case Tx::Action_info_offensive:return "OFENSYWA";
             case Tx::Action_info_support: return "SPECJALNE";
@@ -252,9 +252,9 @@ std::string Localization::get(TextID id)const{
             case Tx::Name_Engineer: return "Engineer";
             //tagi
             case Tx::Tag_direction_Info: return "Zombies are tagged from left to right!           ";
-            case Tx::Tag_PLAYER: return "PLAYER";
-            case Tx::Tag_BUILD: return "BUILDING";
-            case Tx::Tag_ENEMY: return "ENEMY";
+            case Tx::Tag_PLAYER: return " PLAYER";
+            case Tx::Tag_BUILD: return " BUILDING";
+            case Tx::Tag_ENEMY: return " ENEMY";
             //napisy gry
             case Tx::Action_info_offensive:return "OFFENSIVE";
             case Tx::Action_info_support: return "SUPPORT";

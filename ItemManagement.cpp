@@ -29,7 +29,7 @@ MultiDamageResult StickyBomb::eksploduj(vector<Character*> &enemies){
         DamageResult splash=StickyBomb::wlasciciel->damage(*wrog,obrazenia_splash,CM);
         W.Eksplozja.push_back(splash);
         if(debug){cout << "SPLASH: cel=" << splash.cel<< " crit=" << splash.krytyczne << "| bitesthedust="<<splash.bitesthedust<<endl;
-     this_thread::sleep_for(chrono::seconds(4));}
+     this_thread::sleep_for(chrono::seconds(1));}
     }
     return W;
 }

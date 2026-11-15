@@ -3,7 +3,6 @@
 #include <conio.h>
 #include <time.h>
 #include <thread>
-#include <string>
 #include <vector>
 #include <cmath>
 #include <windows.h>
@@ -11,42 +10,12 @@ using namespace std;
 using TP=TypPostaci;
 using TE=TypEfektu;
 using Tx=TextID;
-using GW=Globalne;
 int glowy=0;
 bool smigniecie=false;
 bool kolejComm=false;
 bool ogluszenie=false;//warunek ogluszenia
 int czekaj=0; //kolejka ogluszen
 bool pijany=false;//efekt upicia
-void tag_notyfikacji(const string &napis,int kolor_fontu,int kolor_tla){
-    int miejsce=napis.size();
-    koloruj(kolor_fontu,kolor_tla);cout<<char(201)<<string(miejsce+4,'=')<<char(187);koloruj(15,0);cout<<"\n";
-    koloruj(kolor_fontu,14);cout<<"|  "<<napis<<"  |";koloruj(15,0);cout<<"\n";
-    koloruj(0,14);cout<<char(200)<<string(miejsce+4,'=')<<char(188);koloruj(15,0);cout<<"\n";
-}
-void Barka(Gamecontent &Gc)
-{
-    system("cls");
-    tag_notyfikacji(Gc.S.L.get(Tx::HolyNumberAcquire),0,14);
-    Beep(260,1000);Beep(440,1000);Beep(440,1000);
-    Beep(220,250);
-    Beep(440,250);Beep(495,250);Beep(523,250);Beep(495,250);Beep(440,250);
-    Beep(390,1100);Beep(390,1100);
-    Beep(195,1000);
-    Beep(345,750);Beep(320,250);Beep(345,1000);Beep(345,1000);
-    Beep(160,250);
-    Beep(345,250);Beep(392,250);Beep(440,250);Beep(392,250);Beep(345,250);
-    Beep(330,1100);Beep(330,1100);
-    this_thread::sleep_for(ZaWarudo::seconds(1));
-    Beep(260,1000);Beep(440,1000);Beep(440,1000);
-    Beep(220,250);
-    Beep(440,250);Beep(495,250);Beep(523,250);Beep(495,250);Beep(440,250);
-    Beep(390,1100);Beep(390,1100);
-    Beep(195,1000);
-    Beep(345,750);Beep(320,250);Beep(345,1000);Beep(345,1000);
-    Beep(160,250);
-    Beep(292,250);Beep(320,250);Beep(345,250);Beep(320,250);Beep(292,250);Beep(260,2000);
-}
 bool czy_pudlo(double missrate){
     double los = (double)rand() / RAND_MAX; // Losowa liczba z zakresu 0.0 - 1.0
     return los<missrate;
@@ -59,61 +28,11 @@ int Los(int M,int m){
     if (m==0) return rand()%M;
     return rand()%(M-m+1)+m;
 }
-void usunprzedzial(string &s,int I){
-    reverse(s.begin(),s.end());
-    for (int i=0;i<I;i++) s.pop_back();
-    reverse(s.begin(),s.end());
-}
-void Dialog(string Nazwa, int kolor_fontu,int kolor_tla, string S){
-    bool imiewypowiedziane=false;
-    koloruj(kolor_fontu,kolor_tla);cout<<" "<<string(71,'_');koloruj (7,0);cout<<"\n";
-        while (!S.empty()){
-            string temp="";
-            for (char &c:S){
-            temp+=c;
-            if (temp.size()==60||(temp.size()>=50&&c==' ')||(temp.size()==S.size())) {usunprzedzial(S,temp.size()); break;}
-            }
-            if (imiewypowiedziane){
-                koloruj(kolor_fontu,kolor_tla);cout<<"| "<<setw(70)<<left<<temp<<"|";koloruj (7,0);cout<<"\n";
-            }
-            else {
-                string razem=Nazwa+": "+temp;
-                koloruj(kolor_fontu,kolor_tla);cout<<"| "<<setw(70)<<left<<razem<<"|";koloruj (7,0);cout<<"\n";
-                imiewypowiedziane=true;
-            }
-        }
-        koloruj(kolor_fontu,kolor_tla);cout<<" "<<string(71,char(196));koloruj (7,0);cout<<"\n";
-}
-void AdvDialog(string Nazwa, int kolor_fontu, int kolor_tla, vector<linijkaD> Kwestie){
-    koloruj(kolor_fontu,kolor_tla);cout<<" "<<string(71,'_');koloruj (7,0);cout<<"\n";
-    int ile=0;
-    bool imiewypowiedziane=false;
-    for (auto k:Kwestie){
-        ile++;
-        dzwiek(k.path);
-        while (!k.S.empty()){
-            string temp="";
-            for (char c:k.S){
-            temp+=c;
-            if (temp.size()==65||(temp.size()>=55&&c==' ')||(temp.size()==k.S.size())) {usunprzedzial(k.S,temp.size()); break;}
-            }
-            if (imiewypowiedziane){
-                koloruj(kolor_fontu,kolor_tla);cout<<"| "<<setw(70)<<left<<temp<<"|";koloruj (7,0);cout<<"\n";
-            }
-            else {
-                string razem=Nazwa+": "+temp;
-                koloruj(kolor_fontu,kolor_tla);cout<<"| "<<setw(70)<<left<<razem<<"|";koloruj (7,0);cout<<"\n";
-                imiewypowiedziane=true;
-            }
-        }
-        if (ile==Kwestie.size()){koloruj(kolor_fontu,kolor_tla);cout<<" "<<string(71,char(196));koloruj (7,0);cout<<"\n";}
-        this_thread::sleep_for(ZaWarudo::milliseconds(k.czas));
-    }
-}
 short otrzezwienie=0;
 void kiedy_efekt(Gamecontent &Gc,MultiDamageResult &ew, Character &source){
     bool bylCrit=false;
-    for (DamageResult &dr:ew.Eksplozja){
+    for (const DamageResult &dr:ew.Eksplozja){
+        if(!dr.cel) continue;
         if(dr.krytyczne){
             Gc.SE.R=ScreenEfekt::CRITICAL;
             Gc.CzasTrwania=std::ZaWarudo::steady_clock::now()+std::ZaWarudo::milliseconds(2000);
@@ -123,7 +42,8 @@ void kiedy_efekt(Gamecontent &Gc,MultiDamageResult &ew, Character &source){
             Gc.SE.R=ScreenEfekt::HIT;
             Gc.CzasTrwania=std::ZaWarudo::steady_clock::now()+std::ZaWarudo::milliseconds(1000);
         }
-        if (czyZyje(dr.cel)&&find(Gc.affectedT.begin(),Gc.affectedT.end(),dr.cel)==Gc.affectedT.end()) {Gc.affectedT.push_back(dr.cel);Gc.dane.push_back(dr);}
+        if (find(Gc.affectedT.begin(),Gc.affectedT.end(),dr.cel)==Gc.affectedT.end()) {Gc.affectedT.push_back(dr.cel);}
+        Gc.dane.push_back(dr);
         }
         if (Gc.affectedT.empty()||EverybodyDEAD_NOT_BIG_SUPRISE(Gc.affectedT)){
             narysujScene(Gc);
@@ -173,7 +93,7 @@ void tag_sklepu(const std::string& name,const std::string& valueLabel,int price,
         valueWidth;
     static_assert(usedWidth <= rowWidth);
 
-    const std::size_t trailingWidth = rowWidth - usedWidth;
+    const std::size_t trailingwidth = rowWidth - usedWidth;
 
     std::cout
         << fitText(name, nameWidth)
@@ -188,7 +108,7 @@ void tag_sklepu(const std::string& name,const std::string& valueLabel,int price,
         << std::right
         << value
         << static_cast<char>(176)
-        << std::string(trailingWidth, ' ');
+        << std::string(trailingwidth, ' ');
         koloruj (15,0);cout<<char(186)<<endl;
 }
 void tagi_akcji(vector<string> Napisy){
@@ -205,7 +125,7 @@ void tagi_akcji(vector<string> Napisy){
 }
 void panele(Gamecontent &Gc,Przedmiot &flashbang,Przedmiot &tel, Przedmiot &zatyczki)
 {
-    if (Gc.Wydarzenie==GW::SHOP)
+    if (Gc.Wydarzenie==Globalne::SHOP)
     {
         Eyelander* miecz=Gc.gracz.znajdz<Eyelander>();
         WyrzutnikGranatow* SBLauncher=Gc.gracz.znajdz<WyrzutnikGranatow>();
@@ -514,7 +434,7 @@ void sklep_input(Gamecontent &Gc,Przedmiot &flashbang,Przedmiot &tel,Przedmiot &
                 if(choice2=='y')
                 {
                     dzwiek("Audio_RPG\\menu_selecting.wav");
-                Gc.Wydarzenie=GW::NONE;
+                Gc.Wydarzenie=Globalne::NONE;
                 validchoice2=true;
                 continue;
                 }
@@ -676,6 +596,7 @@ void AkcjaGranatySamoprzylepne(Gamecontent &Gc,Character* &Cel,WyrzutnikGranatow
                 for (auto &B : Bomby)
                 {
                     DamageResult splash;
+                    vector<Character*> Wrogowiepozabiciu=Gc.enemies;
                     MultiDamageResult pojedynczyWybuch = B->eksploduj(Gc.enemies);
                     for (auto &DR : pojedynczyWybuch.Eksplozja)
                     {
@@ -694,8 +615,8 @@ void AkcjaGranatySamoprzylepne(Gamecontent &Gc,Character* &Cel,WyrzutnikGranatow
                     }
                 }
                 Gc.Obiekty.erase(remove_if(Gc.Obiekty.begin(),Gc.Obiekty.end(),[](const unique_ptr<NonLivingObject> &O){
-                                            return dynamic_cast<StickyBomb*>(O.get())!=nullptr;
-                                            }),Gc.Obiekty.end());
+                    return dynamic_cast<StickyBomb*>(O.get())!=nullptr;
+                }),Gc.Obiekty.end());
                 Bomby.clear();
                 for (DamageResult &pojedynczy:Wybuch.Eksplozja){
                     if (!pojedynczy.bitesthedust) //kontrola
@@ -739,7 +660,7 @@ void AkcjaGorzalka(Gamecontent &Gc,Scrumpy* &gorz){
             if (efekt.ID==2&&efekt.aktywny==true){
                 efekt.duration++;
                 koloruj(8,0);
-                cout<<Gc.S.L.get(Tx::Scrumpy_DrunkMaintained)<<efekt.duration;
+                cout<<Gc.S.L.get(Tx::Scrumpy_DrunkMaintained)<<efekt.duration<<endl;
                 koloruj(7,0);
             }
         }
@@ -837,13 +758,13 @@ void AkcjaEkwipunek(Gamecontent &Gc,bool &validchoice){
                     dzwiek_ciagly("Audio_RPG\\rzut.wav");
                     dzwiek("Audio_RPG\\flashbang_throw.wav");
                     this_thread::sleep_for(ZaWarudo::seconds(2));
-                    Gc.Wydarzenie=GW::FLASH;
+                    Gc.Wydarzenie=Globalne::FLASH;
                     flashbang->uzyj(Gc.enemies);
                     screen(Gc);
                     dzwiek("Audio_RPG\\flashbang_boom.wav");
                     this_thread::sleep_for(ZaWarudo::milliseconds(2500));
                     Gc.gracz.ObecnaAkcja=AK::NO_ACTION;
-                    Gc.Wydarzenie=GW::NONE;
+                    Gc.Wydarzenie=Globalne::NONE;
                     screen(Gc);
                     koloruj(11,8);
                     cout<<Gc.S.L.get(Tx::Flashbang_stun_info)<<endl;
@@ -1232,7 +1153,7 @@ void ZasobTURN(Gamecontent &Gc)
     bool ogl=false;
     if (czyZyje(Gc.zasobnik))
     {
-        cout<<Gc.zasobnik->Imie<<Gc.S.L.get(Tx::Turn_info)<<endl<<endl;
+        cout<<Gc.zasobnik->Imie<<Gc.S.L.get(Tx::Turn_info)<<"                          "<<endl<<endl;
         this_thread::sleep_for(ZaWarudo::seconds(2));
         for (const auto &efekt:Gc.zasobnik->efekty){
             if (efekt.aktywny==true)
@@ -1244,6 +1165,7 @@ void ZasobTURN(Gamecontent &Gc)
                     cout<<Gc.S.L.get(Tx::TurnsRemaining)<<efekt.duration<<endl;
                     this_thread::sleep_for(ZaWarudo::seconds(2));
                     ogl=true;
+                    aktualizuj_efekt(Gc);
                     screen(Gc);
                     break;
                 default: break;
@@ -1685,6 +1607,7 @@ void ZomTURN(Gamecontent &Gc,short odliczanie,Character* &t, const Przedmiot &za
     cout<<t->Imie<<Gc.S.L.get(Tx::Turn_info)<<endl;
     koloruj(7,0);
     this_thread::sleep_for(ZaWarudo::seconds(2));
+    aktualizuj_efekt(Gc);
     bool ogl=false;
     for (const auto& efekt:t->efekty){
         if (efekt.ID==1&&efekt.aktywny==true)//jezeli zostal ogluszony
@@ -1805,7 +1728,7 @@ void ciagla_walka(Gamecontent &Gc,short &Barka_status,bool &CzyBylSklep)
         if (Gc.x%5==1&&Gc.x!=1&&!CzyBylSklep)
         {
             Gc.gracz.DEF=1;
-            Gc.Wydarzenie=GW::SHOP;
+            Gc.Wydarzenie=Globalne::SHOP;
             CzyBylSklep=true;
             dzwiek_loop("Audio_RPG\\Upgradestation_loop.wav");
             screen(Gc);
@@ -1813,7 +1736,7 @@ void ciagla_walka(Gamecontent &Gc,short &Barka_status,bool &CzyBylSklep)
             do
             {
                 sklep_input(Gc,*flashbang,*tel,*zatyczki);
-            }while (Gc.Wydarzenie==GW::SHOP);
+            }while (Gc.Wydarzenie==Globalne::SHOP);
             cout << "DEBUG: wyszedlem ze sklepu\n";
             this_thread::sleep_for(ZaWarudo::milliseconds(1000));
             short battlecry=Los(10,0);
@@ -1824,7 +1747,7 @@ void ciagla_walka(Gamecontent &Gc,short &Barka_status,bool &CzyBylSklep)
         }
         else
         {
-        Gc.Wydarzenie=GW::NONE;
+        Gc.Wydarzenie=Globalne::NONE;
         Gc.gracz.ObecnaAkcja=AK::NO_ACTION;
         flashbang = Gc.gracz.znajdz<Flashbang>();
         tel=Gc.gracz.znajdz<Telephone>();
@@ -1853,15 +1776,15 @@ void ciagla_walka(Gamecontent &Gc,short &Barka_status,bool &CzyBylSklep)
             DzialTURN(Gc);
         else if (czyZyje(Gc.zasobnik)&&!(EverybodyDEAD_NOT_BIG_SUPRISE(Gc.enemies)))
             ZasobTURN(Gc);
-        screen(Gc);
         if (EverybodyDEAD_NOT_BIG_SUPRISE(Gc.enemies)) {
-            Gc.wybor=false;
-            CzyBylSklep=false;
             for (Character* wrog:Gc.enemies){
             Gc.gracz.EXP+=wrog->EXP+(10*Gc.x);
             ogluszenie=false;
             if (czyZyje(wrog)) wrog->updateujEfekty(*wrog);
-            }
+        }
+        screen(Gc);
+            Gc.wybor=false;
+            CzyBylSklep=false;
             if(liczba_wrogow>1) cout << "\n"<<Gc.S.L.get(Tx::EnemiesDefeated)<< endl;
             else cout<<"\n"<<Gc.enemies[0]->Imie<<Gc.S.L.get(Tx::EnemyDefeated)<<endl;
             czekaj=0;
@@ -1934,6 +1857,7 @@ void ciagla_walka(Gamecontent &Gc,short &Barka_status,bool &CzyBylSklep)
             system("cls");
             }
         else {
+            screen(Gc);
             bool kolejComm=false;
                 short chark=Los(2,0);
             switch (chark)

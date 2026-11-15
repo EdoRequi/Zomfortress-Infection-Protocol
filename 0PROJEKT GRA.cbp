@@ -61,8 +61,19 @@
 		<Unit filename="Screen.h">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
+		<Unit filename="SoundManagement.cpp" />
 		<Unit filename="SoundManagement.h" />
+		<Unit filename="TextManagement.cpp" />
+		<Unit filename="TextManagement.h" />
+		<Unit filename="Visual.cpp" />
+		<Unit filename="Visual.h" />
+		<Unit filename="events.cpp" />
+		<Unit filename="events.h" />
+		<Unit filename="labels.cpp" />
+		<Unit filename="labels.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="menu.cpp" />
+		<Unit filename="menu.h" />
 		<Extensions />
 	</Project>
 </CodeBlocks_project_file>
