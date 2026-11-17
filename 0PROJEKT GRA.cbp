@@ -2,7 +2,7 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="0PROJEKT GRA" />
+		<Option title="ZomfortressIE" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
@@ -41,6 +41,11 @@
 			<Add option="-static-libgcc" />
 			<Add option="-static-libstdc++" />
 		</Linker>
+		<Unit filename="Character.cpp" />
+		<Unit filename="Character.h" />
+		<Unit filename="Gamelogic.h" />
+		<Unit filename="GamelogicLoc.cpp" />
+		<Unit filename="GamelogicPrimary.cpp" />
 		<Unit filename="Gamerules.h">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
@@ -48,11 +53,27 @@
 		<Unit filename="Gamestuff.h">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
+		<Unit filename="ItemManagement.cpp" />
+		<Unit filename="ItemManagement.h" />
+		<Unit filename="Player.cpp" />
+		<Unit filename="Player.h" />
 		<Unit filename="Screen.cpp" />
 		<Unit filename="Screen.h">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
+		<Unit filename="SoundManagement.cpp" />
+		<Unit filename="SoundManagement.h" />
+		<Unit filename="TextManagement.cpp" />
+		<Unit filename="TextManagement.h" />
+		<Unit filename="Visual.cpp" />
+		<Unit filename="Visual.h" />
+		<Unit filename="events.cpp" />
+		<Unit filename="events.h" />
+		<Unit filename="labels.cpp" />
+		<Unit filename="labels.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="menu.cpp" />
+		<Unit filename="menu.h" />
 		<Extensions />
 	</Project>
 </CodeBlocks_project_file>
