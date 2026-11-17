@@ -644,8 +644,16 @@ void AkcjaGorzalka(Gamecontent &Gc,Scrumpy* &gorz){
     koloruj(11,8);
     cout<<Gc.S.L.get(Tx::Used_info_Scrumpy)<<endl;
     koloruj(7,0);
-    Dialog(Gc.gracz.Imie,12,0,Gc.S.L.get(Tx::Demo_response_Scrumpy));
-    dzwiek_ciagly("Audio_RPG\\Demoman_response_scrumpy.wav");
+    int los_dialog=Los(2,1);
+    switch (los_dialog){
+    case 1:
+        Dialog(Gc.gracz.Imie,12,0,Gc.S.L.get(Tx::Demo_response_Scrumpy));
+        dzwiek_ciagly("Audio_RPG\\Demoman_response_scrumpy.wav");
+        break;
+    default:
+        Dialog(Gc.gracz.Imie,12,0,Gc.S.L.get(Tx::Demo_response_Scrumpy2));
+        dzwiek_ciagly("Audio_RPG\\Demoman_response_scrumpy2.wav");
+    }
     this_thread::sleep_for(ZaWarudo::seconds(1));
     short alkoholizm=Los(4,0);//1 na 5 szansy na upojenie-efekt przez ktory zadajesz o 20% mniej ataku
     unsigned int przedHP = Gc.gracz.HP;
@@ -966,7 +974,7 @@ void Input(short &Barka_status,Gamecontent &Gc,Przedmiot &flashbang,Przedmiot &t
                                     break;
                                 default:
                                     Dialog(Gc.gracz.Imie,12,0,Gc.S.L.get(Tx::Demo_response_Caber3));
-                                    this_thread::sleep_for(ZaWarudo::seconds(3));
+                                    dzwiek_ciagly("Audio_RPG\\Demoman_response_cross.wav");
                                     break;
                                 }
                                 Gc.gracz.ObecnaAkcja=AK::SPECIAL;

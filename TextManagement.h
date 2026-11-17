@@ -6,8 +6,8 @@
 #include <iomanip>
 #pragma once
 #include "SoundManagement.h"
-std::string LFormat(const std::string &tekst,int szer);
-std::string PFormat(const std::string &tekst,int szer);
+std::string LFormat(const std::string &tekst,size_t szer);
+std::string PFormat(const std::string &tekst,size_t szer);
 void koloruj(int fg,int bg);
 struct Character;
 struct Gamecontent;

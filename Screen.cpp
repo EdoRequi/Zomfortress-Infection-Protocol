@@ -121,7 +121,6 @@ char efekt_napis(Gamecontent &Gc,Character* &cel, int w,int i,int j,const string
                             switch (relI){
                                 case 0:
                                 switch(relJ){
-                                    koloruj(10,8);
                                     case 0: koloruj(10,8);return 'C';
                                     case 1: koloruj(10,8);return 'R';
                                     case 2: koloruj(10,8);return 'I';
@@ -134,7 +133,6 @@ char efekt_napis(Gamecontent &Gc,Character* &cel, int w,int i,int j,const string
                                 }
                                 case 1:
                                 switch(relJ){
-                                    koloruj(10,8);
                                     case 1: koloruj(10,8);return 'H';
                                     case 2: koloruj(10,8);return 'I';
                                     case 3: koloruj(10,8);return 'T';

@@ -101,7 +101,7 @@ enum class TextID{
     Demo_response_Caber1,Demo_response_Caber2,Demo_response_Caber3,
     Demo_response_UsedCaber,Demo_response_win,Demo_response_win2,Demo_response_jeer,Demo_response_jeer2,Demo_response_jeer3,
     Demo_response_dom,Demo_response_dom2,Demo_response_laugh,Demo_response_glue,
-    Demo_response_Scrumpy,
+    Demo_response_Scrumpy,Demo_response_Scrumpy2,
     Demo_NoSuffer_CUZ_HE_IS_DRUNK,
 
     Obj_IsStunned,Obj_Is,Obj_IsDeactivated,Obj_IsPowered,Obj_IsPoisoned,Obj_StoppedWorking,Obj_SufferedStrongAttack,Obj_NoSuffer,Obj_Miss,Obj_Miss2,Obj_DealsCrit,Obj_Destroyed,

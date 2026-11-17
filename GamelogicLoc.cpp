@@ -121,6 +121,7 @@ std::string Localization::get(TextID id)const{
             case Tx::Phone_achievement_wastingSP: return "Widze, ze bardzo uwielbiasz marnowac ruchy i SP.";
             //Wypowiedzi Demomana
             case Tx::Demo_response_Scrumpy: return "Ejj... Czas na popicie Scrumpym!";
+            case Tx::Demo_response_Scrumpy2: return "Ach, musze sie napic!";
             case Tx::Demo_response_drunk1: return "Zaraz was zabije i bede was zabijal i ja nigdy tego nie zrobie, poniewaz i tak bedziecie martwi, wiec nie bede musial was zabijac.";
             case Tx::Demo_response_drunk2: return "(paplanina)... wlasnie chcialem pojechac na stacje BOLOWEGO POCIAGU w Train Town...";
             case Tx::Demo_response_drunk3: return "Ja... kocham takich jak ... ty tutaj... nie was.";
@@ -129,7 +130,7 @@ std::string Localization::get(TextID id)const{
             case Tx::Demo_response_drunk6: return "Kazdy z was... eee... co mysli, zeee... jest lepszy ode mnie... nastepny dostanie za...";
             case Tx::Demo_response_Caber1: return "Nie boj sie chloptasiu, bede delikatny!";
             case Tx::Demo_response_Caber2: return "O, zbije cie tak mocno, ze dostaniesz dreszczy!";
-            case Tx::Demo_response_Caber3: return "A TERAZ WSZYSCY WYBUCHNIECIE!!!";
+            case Tx::Demo_response_Caber3: return "Przez was jestem taki WSCIEKLY!!!";
             case Tx::Demo_response_UsedCaber: return "I oto to zyskujesz, gdy dotkniesz tego!";
             case Tx::Demo_response_dom: return "ZDOMINOWANY! (smiech)";
             case Tx::Demo_response_dom2: return "(spiewajaco) Wszyscy pyszalkowie podskakuja ze swymi lbami pelnym galek [ocznych]!";
@@ -182,7 +183,7 @@ std::string Localization::get(TextID id)const{
             case Tx::Obj_StoppedWorking: return " przestalo dzialac.";
             case Tx::Dispenser_heal: return "Zostales uleczony przez: ";
             //efekty
-            case Tx::Eff_info: return " EFEKTY:";
+            case Tx::Eff_info: return " EFEKTY";
             case Tx::Eff_Stun: return "[OGLUSZENIE]";
             case Tx::Eff_Drunk: return "[UPICIE]";
             case Tx::Eff_Powered: return "[WZMOCNIENIE]";
@@ -305,6 +306,7 @@ std::string Localization::get(TextID id)const{
             case Tx::Phone_achievement_wastingSP: return "I see you are really fond of wasting moves and SP.";
             //Wypowiedzi Demomana
             case Tx::Demo_response_Scrumpy: return "Aye, me bottle o'scrumpy!";
+            case Tx::Demo_response_Scrumpy2: return "Oah, I need a drink!";
             case Tx::Demo_response_drunk1: return "Gonna kill you and I'll keep killin' you and I'll never, cause you're 'onna be dead and I don't gotta kill you.";
             case Tx::Demo_response_drunk2: return "(gibberish)... I was gonna take down to the Pain Train station in Train Town...";
             case Tx::Demo_response_drunk3: return "I love... every... single... one of ye... not you.";
@@ -313,7 +315,7 @@ std::string Localization::get(TextID id)const{
             case Tx::Demo_response_drunk6: return "Any of you that think ye're better 'n me, you're gon' have another thing c-..";
             case Tx::Demo_response_Caber1: return "Don't fret, boyo. I'll be gentle!";
             case Tx::Demo_response_Caber2: return "Ohh, I'm gonna beat ya so hard, you'll have a twitch!";
-            case Tx::Demo_response_Caber3: return "And NOW EVERYBODY OF YEH ARE GOIN' TO EXPLODE!!!";
+            case Tx::Demo_response_Caber3: return "You're making me VERY CROSS!!!";
             case Tx::Demo_response_UsedCaber: return "And that's what ya get from touching that!";
             case Tx::Demo_response_dom: return "DOMINATED! (laugh)";
             case Tx::Demo_response_dom2: return "(singing) All yah dandies prancin' aboot with ya heads full of eyeballs!";
@@ -366,7 +368,7 @@ std::string Localization::get(TextID id)const{
             case Tx::Obj_StoppedWorking: return " has stopped working.";
             case Tx::Dispenser_heal: return "You got healed by: ";
             //efekty
-            case Tx::Eff_info: return " EFFECTS:";
+            case Tx::Eff_info: return " EFFECTS";
             case Tx::Eff_Stun: return "[STUNNED]";
             case Tx::Eff_Drunk: return "[DRUNK]";
             case Tx::Eff_Powered: return "[POWERED]";

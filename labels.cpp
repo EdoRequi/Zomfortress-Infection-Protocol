@@ -59,16 +59,17 @@ void pokazStatystyki(Gui &g,Kursor &k,const Character &postac,const string& etyk
     g.naniesTekst(k,15,0,"|");
     string zdrowie=" HP: "+string(1,(char)176);
     g.naniesTekst(k,15,12,zdrowie);
-    g.naniesTekst(k,15,12,PFormat(to_string(postac.HP),4));
+    g.naniesTekst(k,15,12,PFormat(to_string(postac.HP),5));
     g.naniesTekst(k,15,12,"/");
-    g.naniesTekst(k,15,12,PFormat(to_string(postac.base_HP)+string(1,(char)176),4));
-    g.naniesTekst(k,15,12,"  ");
+    g.naniesTekst(k,15,12,PFormat(to_string(postac.base_HP)+string(1,(char)176),5));
+    g.naniesTekst(k,15,12," ");
     g.naniesTekst(k,7,12,"DEF: "+string(1,(char)176));
     g.naniesTekst(k,7,12,PFormat(to_string(postac.DEF)+string(1,(char)176),3));
-    g.naniesTekst(k,15,12,"    ");
+    g.naniesTekst(k,15,12,"   ");
     g.naniesTekst(k,15,0,"| \n");
     if (postac.typ==TP::GRACZ){
         rozmiar++;
+        g.SetHeight(rozmiar);
         g.naniesTekst(k,15,0,"|");
         g.naniesTekst(k,15,12," ");
         string specjalne=string(1,(char)176)+"SP: ";
@@ -83,16 +84,21 @@ void pokazStatystyki(Gui &g,Kursor &k,const Character &postac,const string& etyk
     }
     else if(postac.typ==TP::NALADOWANY){
         rozmiar++;
+        g.SetHeight(rozmiar);
         g.naniesTekst(k,15,0,"|");
         g.naniesTekst(k,15,12," ");
         string specjalne=string(1,(char)176)+"SP: ";
         g.naniesTekst(k,14,12,specjalne);
         g.naniesTekst(k,14,12,PFormat(to_string(postac.SP)+string(1,(char)176),4));
-        g.naniesTekst(k,15,12,"                     ");
+        g.naniesTekst(k,15,12,"                    ");
         g.naniesTekst(k,15,0,"|\n");
+    }
+    else if(postac.typ==TP::EXPLODER){
+
     }
     if (!postac.efekty.empty()){
         rozmiar+=postac.efekty.size();
+        g.SetHeight(rozmiar);
         g.naniesTekst(k,15,0,"|");
         g.naniesTekst(k,15,12," "+L.get(Tx::Eff_info)+":                      ");
         g.naniesTekst(k,15,0,"|\n");

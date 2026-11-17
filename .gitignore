@@ -72,3 +72,5 @@ Testing/
 bin/
 *.layout
 *.depend
+# macOS cryptic logs
+._*

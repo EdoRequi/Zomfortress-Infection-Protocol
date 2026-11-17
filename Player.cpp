@@ -459,8 +459,8 @@ char Demo_special_Caber(int relI,int relJ,Player &source){
                 case 7:
                     koloruj(0,8);
                     return '|';
-                case 8:
-                case 9:
+                case 10:
+                case 11:
                     koloruj(2,8);
                     return '-';
                 default:

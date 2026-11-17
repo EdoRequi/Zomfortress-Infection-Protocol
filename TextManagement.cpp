@@ -3,11 +3,11 @@
 #include <string>
 #include <vector>
 using namespace std;
-string LFormat(const string &tekst,int szer){
+string LFormat(const string &tekst,size_t szer){
     if(tekst.size()>=szer) return tekst;
     else return tekst+string(szer-tekst.size(),' ');
 }
-string PFormat(const string &tekst,int szer){
+string PFormat(const string &tekst,size_t szer){
     if(tekst.size()>=szer) return tekst;
     else return string(szer-tekst.size(),' ')+tekst;
 }
