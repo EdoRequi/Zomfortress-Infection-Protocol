@@ -2,11 +2,27 @@
 #include "SoundManagement.h"
 #include <iostream>
 #include <windows.h>
+#include <random>
+#include<cstdlib>
 using namespace std;
 
 namespace std{
     namespace ZaWarudo=chrono;
 };
+bool czy_pudlo(double missrate){
+    double los = (double)rand() / RAND_MAX; // Losowa liczba z zakresu 0.0 - 1.0
+    return los<missrate;
+}
+bool czy_crit(double critrate){
+    double los=(double)rand()/RAND_MAX;
+    return los<critrate;
+}
+int Los(int M,int m){
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_int_distribution<int> distrib(m,M);
+    return distrib(gen);
+}
 void koloruj(int fg,int bg) {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     WORD kolor = (bg << 4) | fg; // Tlo przesuniete w lewo o 4 bity
@@ -29,19 +45,4 @@ MultiDamageResult nowyMDR(vector<DamageResult> multi){
     MDR.Eksplozja=multi;
     return MDR;
 }
-void configureConsoleInput()
-{
-    HANDLE h = GetStdHandle(STD_INPUT_HANDLE);
 
-    DWORD mode = 0;
-    if (!GetConsoleMode(h, &mode)) {
-        return;
-    }
-    mode |= ENABLE_EXTENDED_FLAGS;
-    mode &= ~ENABLE_QUICK_EDIT_MODE;
-    mode &= ~ENABLE_MOUSE_INPUT;
-
-    SetConsoleMode(h, mode);
-
-    FlushConsoleInputBuffer(h);
-}

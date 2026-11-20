@@ -43,6 +43,12 @@
 		</Linker>
 		<Unit filename="Character.cpp" />
 		<Unit filename="Character.h" />
+		<Unit filename="Controls.cpp">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Controls.h" />
+		<Unit filename="Demoman.cpp" />
+		<Unit filename="Demoman.h" />
 		<Unit filename="Gamelogic.h" />
 		<Unit filename="GamelogicLoc.cpp" />
 		<Unit filename="GamelogicPrimary.cpp" />

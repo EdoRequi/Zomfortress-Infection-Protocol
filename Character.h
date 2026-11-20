@@ -156,7 +156,6 @@ struct Character
         {
             case GRACZ:
                 {
-
                 int demo_ouch=Los(1,0);
                 switch (demo_ouch)
                 {

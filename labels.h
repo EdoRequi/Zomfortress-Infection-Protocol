@@ -41,6 +41,10 @@ class Gui{
         WYS+=newWys;
         ekran.resize(WYS,std::vector<Piksel>(SZER,Piksel(' ',15,0)));
     }
+    void ResetHeight(int newWys){
+        WYS=newWys;
+        ekran.resize(WYS,std::vector<Piksel>(SZER,Piksel(' ',15,0)));
+    }
     void naniesTekst(Kursor &k,int fg,int bg,const std::string& tekst){
 
         bool zmianalinii=false;

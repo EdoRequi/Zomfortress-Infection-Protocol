@@ -9,7 +9,8 @@
 #include "ItemManagement.h"
 #include "Screen.h"
 #include "TextManagement.h"
-
+#include "Controls.h"
+#include "Demoman.h"
 struct Przedmiot;
 extern bool smigniecie;
 extern bool CzyBylSklep;
@@ -26,7 +27,6 @@ enum class DamageTyp{
     HEALING
 
 };
-int Los(int M,int m);
 void panele(Gamecontent &Gc,Przedmiot &flashbang,Przedmiot &tel,Przedmiot &zatyczki); //graficzne
 void ofensywa_wybrana(Gamecontent &Gc);
 void wsparcie_wybrane(Gamecontent &Gc);
@@ -36,7 +36,6 @@ bool EverybodyDEAD_NOT_BIG_SUPRISE(const std::vector<Character*>& enemies);
 short target(Gamecontent &Gc);
 //logika wczytywania klawiszy
 void sklep_input(Gamecontent &Gc,Przedmiot &flashbang,Przedmiot &tel,Przedmiot &zatyczki);
-extern short Barka_status;
 void Input(short &Barka_status,Gamecontent &Gc,Przedmiot &fajerwerk,Przedmiot &tel,Przedmiot & zatyczki);
 void DzialTURN(Gamecontent &Gc); // runda NPCtow
 void ZasobTURN(Gamecontent &Gc);

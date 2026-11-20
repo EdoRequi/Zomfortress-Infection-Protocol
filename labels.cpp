@@ -34,6 +34,8 @@ const void wypiszEfekty(Gui &g,Kursor &k,int fg,int bg,const Character &postac)
                 case KRYTOWANIE:{
                     tag_efektu(g,L.get(Tx::Eff_MoreCritrate),k,11,12);
                     break;}
+                case NA: default:
+                    break;
                 }
         }
     }
@@ -44,10 +46,7 @@ const void wypiszEfekty(Gui &g,Kursor &k,int fg,int bg,const Character &postac)
 }
 void pokazStatystyki(Gui &g,Kursor &k,const Character &postac,const string& etykieta) {
     if (!czyZyje(postac)) return;
-    int rozmiar=4;
-    if (postac.typ==TP::GRACZ||postac.typ==TP::NALADOWANY) rozmiar++;
-    if(!postac.efekty.empty()) rozmiar+=postac.efekty.size();
-    g.SetHeight(rozmiar);
+    if(postac.typ==TP::DZIALKO||postac.typ==TP::ZASOBNIK) g.SetHeight(3);
     string granica_ramki="+"+string(30, (char)196)+"+\n";
     g.naniesTekst(k,15,0,granica_ramki);
     g.naniesTekst(k,15,0,"|");
@@ -68,8 +67,6 @@ void pokazStatystyki(Gui &g,Kursor &k,const Character &postac,const string& etyk
     g.naniesTekst(k,15,12,"   ");
     g.naniesTekst(k,15,0,"| \n");
     if (postac.typ==TP::GRACZ){
-        rozmiar++;
-        g.SetHeight(rozmiar);
         g.naniesTekst(k,15,0,"|");
         g.naniesTekst(k,15,12," ");
         string specjalne=string(1,(char)176)+"SP: ";
@@ -83,8 +80,6 @@ void pokazStatystyki(Gui &g,Kursor &k,const Character &postac,const string& etyk
         g.naniesTekst(k,15,0,"|\n");
     }
     else if(postac.typ==TP::NALADOWANY){
-        rozmiar++;
-        g.SetHeight(rozmiar);
         g.naniesTekst(k,15,0,"|");
         g.naniesTekst(k,15,12," ");
         string specjalne=string(1,(char)176)+"SP: ";
@@ -97,8 +92,7 @@ void pokazStatystyki(Gui &g,Kursor &k,const Character &postac,const string& etyk
 
     }
     if (!postac.efekty.empty()){
-        rozmiar+=postac.efekty.size();
-        g.SetHeight(rozmiar);
+        g.SetHeight(postac.efekty.size());
         g.naniesTekst(k,15,0,"|");
         g.naniesTekst(k,15,12," "+L.get(Tx::Eff_info)+":                      ");
         g.naniesTekst(k,15,0,"|\n");
@@ -110,12 +104,15 @@ void pokazStatystyki(Gui &g,Kursor &k,const Character &postac,const string& etyk
 void ShowStatystyki(Gamecontent &Gc){
     Gui gui;
     Kursor k(0,0,0);
+    gui.ResetHeight(0);
     if (Gc.Wydarzenie==Globalne::NONE||Gc.Wydarzenie==Globalne::FLASH){
+        gui.SetHeight(6);
         pokazStatystyki(gui,k,Gc.gracz,L.get(Tx::Tag_PLAYER));
         pokazStatystyki(gui,k,*Gc.dzialko,L.get(Tx::Tag_BUILD));
         pokazStatystyki(gui,k,*Gc.zasobnik,L.get(Tx::Tag_BUILD));
         k.tab(40,0);
         for (const auto &wrog:Gc.enemies){
+            gui.SetHeight(2);
             pokazStatystyki(gui,k,*wrog,L.get(Tx::Tag_ENEMY));
             k.tab(40,k.y);
         }

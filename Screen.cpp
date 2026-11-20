@@ -896,8 +896,8 @@ void screen(Gamecontent &Gc)
     koloruj(0,4);
     cout<<Gc.S.L.get(Tx::Wave_info)<<Gc.x<<" --"<<endl;
 
-     koloruj(7,0);
-     cout<<endl;
+    koloruj(7,0);
+    cout<<endl;
     ShowStatystyki(Gc);
     if (Gc.wskazany < 1 || Gc.wskazany>static_cast<int>(Gc.enemies.size())) {
         cout <<Gc.S.L.get(Tx::Error_info_IndexOutOfBounds)<< Gc.wskazany << ", Gc.enemies.size() = " << Gc.enemies.size() << endl;

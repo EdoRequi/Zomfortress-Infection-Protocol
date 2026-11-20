@@ -1,8 +1,7 @@
 #include <iostream>
 #include <windows.h>
 #include <thread>
-#include "TextManagement.h"
-#include "Gamelogic.h"
+#include "events.h"
 
 using namespace std;
 using Tx=TextID;

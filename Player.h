@@ -2,6 +2,8 @@
 #define PLAYER_H_INCLUDED
 #include <iostream>
 #pragma once
+#include "Demoman.h"
+#include "Screen.h"
 #include "Gamelogic.h"
 #include "Character.h"
 struct Player : public Character{
@@ -23,6 +25,7 @@ struct Player : public Character{
     return nullptr;
     }
 };
+
 char rzut_granatem(int w,int i,int j,Player &source);
 char sword_pulled(int relI,int relJ,Player &source);
 char SBL_pulled(int relI,int relJ,Player &source);

@@ -181,10 +181,11 @@ struct Gamecontent{
     std::chrono::steady_clock::time_point &CzasTrwania;
 
 };
-void Barka(Gamecontent &Gc);
+bool czy_pudlo(double missrate);
+bool czy_crit(double missrate);
+int Los(int M,int m);
 void koloruj(int fg,int bg);
 void ReturnToZero(Gamecontent& Gc);
 void aktualizuj_efekt(Gamecontent &Gc);
 MultiDamageResult nowyMDR(std::vector<DamageResult> multi);
-void configureConsoleInput();
 #endif // GAMELOGIC_H_INCLUDED
