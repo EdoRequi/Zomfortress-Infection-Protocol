@@ -74,6 +74,7 @@ std::string Localization::get(TextID id)const{
             case Tx::Action_info_offensive:return "OFENSYWA";
             case Tx::Action_info_support: return "SPECJALNE";
             case Tx::Action_info_equipment: return "PRZEDMIOTY";
+            case Tx::Action_info_emote: return "EMOTKA";
             case Tx::Demo_actions_offensive_Sword: return "Miecz";
             case Tx::Demo_actions_offensive_SBL: return "Wyrzutnik granatow samoprzylepnych";
             case Tx::Demo_actions_offensive_specialAttack: return "ATAK SPECJALNY (zuzywa 15 SP)";
@@ -260,6 +261,7 @@ std::string Localization::get(TextID id)const{
             case Tx::Action_info_offensive:return "OFFENSIVE";
             case Tx::Action_info_support: return "SUPPORT";
             case Tx::Action_info_equipment: return "EQUIPMENT";
+            case Tx::Action_info_emote: return "EMOTE";
             case Tx::Demo_actions_offensive_Sword: return "Eyelander";
             case Tx::Demo_actions_offensive_SBL: return "Sticky Bomb Launcher";
             case Tx::Demo_actions_offensive_specialAttack: return "SPECIAL ATTACK (costs 15 SP)";

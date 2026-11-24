@@ -28,6 +28,7 @@ enum class DamageTyp{
 
 };
 void panele(Gamecontent &Gc,Przedmiot &flashbang,Przedmiot &tel,Przedmiot &zatyczki); //graficzne
+void panele_poza_gamestuff(Gamecontent &Gc);
 void ofensywa_wybrana(Gamecontent &Gc);
 void wsparcie_wybrane(Gamecontent &Gc);
 void kiedy_efekt(Gamecontent &Gc,MultiDamageResult &ew, Character &source);

@@ -84,6 +84,26 @@ struct Character
     Character(TypPostaci t, const std::string& im, unsigned int hp, unsigned int basehp, int atk, long exp,int sp, int def, bool doubleAtk=false, double mr=0.0,double cr=0.0,short cd=-1,TypAkcji oa=AK::NO_ACTION)
         : typ(t),Imie(im), HP(hp),base_HP(basehp), ATK(atk), EXP(exp), SP(sp), DEF(def), czy_doubleATK(doubleAtk),missrate(mr),critrate(cr),odliczanie(cd),ObecnaAkcja(oa) {}
     std::vector<StatusEfekt> efekty;
+    int obecna_klatka=0;
+    const int MAX_klatek=16;
+    bool emotka_aktywna=false;
+    void zatancz(){
+        if(ObecnaAkcja!=TypAkcji::ACTION_EMOTE){
+        ObecnaAkcja=TypAkcji::ACTION_EMOTE;
+        obecna_klatka=0;
+        emotka_aktywna=true;}
+        else {
+                ObecnaAkcja=TypAkcji::NO_ACTION;
+                emotka_aktywna=false;
+                PlaySound(NULL,0,0);
+        }
+    }
+    void aktualizuj_anim(){
+        if(ObecnaAkcja==TypAkcji::ACTION_EMOTE){
+            obecna_klatka++;
+            if(obecna_klatka>MAX_klatek) obecna_klatka=0;
+        }
+    }
     void dodajefekt(TypEfektu ID,short duration,Character& target)
     {
         StatusEfekt efekt;

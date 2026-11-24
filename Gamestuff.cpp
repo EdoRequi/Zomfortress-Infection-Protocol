@@ -50,11 +50,9 @@ string fitText(const std::string& text, std::size_t width)
     if (text.size() <= width) {
         return text + std::string(width - text.size(), ' ');
     }
-
     if (width <= 3) {
         return text.substr(0, width);
     }
-
     return text.substr(0, width - 3) + "...";
 }
 void tag_sklepu(const std::string& name,const std::string& valueLabel,int price,int value)
@@ -71,13 +69,7 @@ void tag_sklepu(const std::string& name,const std::string& valueLabel,int price,
         2 + // "\\ "
         1 + // character 177
         1;  // character 176
-    constexpr std::size_t usedWidth =
-        nameWidth +
-        gapWidth +
-        priceWidth +
-        separatorWidth +
-        valueLabelWidth +
-        valueWidth;
+    constexpr std::size_t usedWidth=nameWidth +gapWidth +priceWidth +separatorWidth +valueLabelWidth +valueWidth;
     static_assert(usedWidth <= rowWidth);
 
     const std::size_t trailingwidth = rowWidth - usedWidth;
@@ -98,15 +90,13 @@ void tag_sklepu(const std::string& name,const std::string& valueLabel,int price,
         << std::string(trailingwidth, ' ');
         koloruj (15,0);cout<<char(186)<<endl;
 }
-void tagi_akcji(vector<string> Napisy){
-    short numer=1;
-    for (string &N:Napisy){
-        cout<<"\\"<<numer<<"."<<N<<"\\"<<" ";
-        numer++;
+void tagi_akcji(vector<pair<string,char>> Napisy){
+    for (auto &N:Napisy){
+        cout<<"\\"<<N.second<<"."<<N.first<<"\\"<<" ";
     }
     cout<<"             \n";
-    for (string &N:Napisy){
-        cout<<" ";uzyjUTF8(L'\u203E',N.size()+3);cout<<" ";
+    for (auto &N:Napisy){
+        cout<<" ";uzyjUTF8(L'\u203E',N.first.size()+3);cout<<" ";
     }
     cout<<"                              "<<endl;
 }
@@ -137,6 +127,9 @@ void panele(Gamecontent &Gc,Przedmiot &flashbang,Przedmiot &tel, Przedmiot &zaty
     cout<<Gc.S.L.get(Tx::X_for_continue2)<<endl;
     cout<<endl;
     }
+    else if(Gc.gracz.emotka_aktywna){
+        koloruj(2,0);cout<<"\\G - STOP DANCING\\ \n";
+    }
     else
     {
         for (const auto& efekt:Gc.gracz.efekty){
@@ -145,8 +138,14 @@ void panele(Gamecontent &Gc,Przedmiot &flashbang,Przedmiot &tel, Przedmiot &zaty
         cout<<endl;
         cout<<string(64,char(196))<<endl;
 
-    tagi_akcji({Gc.S.L.get(Tx::Action_info_offensive),Gc.S.L.get(Tx::Action_info_support),Gc.S.L.get(Tx::Action_info_equipment)});
+    tagi_akcji({{Gc.S.L.get(Tx::Action_info_offensive),'1'},{Gc.S.L.get(Tx::Action_info_support),'2'},{Gc.S.L.get(Tx::Action_info_equipment),'3'},{Gc.S.L.get(Tx::Action_info_emote),'G'}});
     }
+}
+void panele_poza_gamestuff(Gamecontent &Gc){
+    Flashbang *flashbang = Gc.gracz.znajdz<Flashbang>();
+    Telephone *tel=Gc.gracz.znajdz<Telephone>();
+    Earplugs *zatyczki=Gc.gracz.znajdz<Earplugs>();
+    panele(Gc,*flashbang,*tel,*zatyczki);
 }
 void ofensywa_wybrana(Gamecontent &Gc)
 {
@@ -158,7 +157,7 @@ void ofensywa_wybrana(Gamecontent &Gc)
     narysujScene(Gc);
     cout<<endl;
     cout<<string(64,char(196))<<endl;
-        tagi_akcji({Gc.S.L.get(Tx::Demo_actions_offensive_Sword),Gc.S.L.get(Tx::Demo_actions_offensive_SBL),Gc.S.L.get(Tx::Demo_actions_offensive_specialAttack)});
+        tagi_akcji({{Gc.S.L.get(Tx::Demo_actions_offensive_Sword),'1'},{Gc.S.L.get(Tx::Demo_actions_offensive_SBL),'2'},{Gc.S.L.get(Tx::Demo_actions_offensive_specialAttack),'3'},{Gc.S.L.get(Tx::X_for_exit),'X'}});
 }
 void wsparcie_wybrane(Gamecontent &Gc)
 {
@@ -170,7 +169,7 @@ void wsparcie_wybrane(Gamecontent &Gc)
     narysujScene(Gc);
     cout<<endl;
     cout<<string(64,char(196))<<endl;
-    tagi_akcji({Gc.S.L.get(Tx::Demo_actions_support_Scrumpy),Gc.S.L.get(Tx::Demo_actions_support_Shield)});
+    tagi_akcji({{Gc.S.L.get(Tx::Demo_actions_support_Scrumpy),'1'},{Gc.S.L.get(Tx::Demo_actions_support_Shield),'2'},{Gc.S.L.get(Tx::X_for_exit),'X'}});
 }
 void przedmioty_wybrane(Gamecontent &Gc, const Przedmiot &flashbang,const Przedmiot &tel,const Przedmiot &zatyczki)
 {
@@ -630,6 +629,14 @@ void Input(short &Barka_status,Gamecontent &Gc,Przedmiot &flashbang,Przedmiot &t
                             }
                             else cout<<Gc.S.L.get(Tx::Error_noSP)<<endl;
                         }
+                        case 'x':
+                            {
+                                validchoice=false;
+                                ofensywaDone=true;
+                                dzwiek("Audio_RPG\\menu_back.wav");
+                                screen(Gc);
+                                panele(Gc,flashbang,tel,zatyczki);
+                            break;}
                         default:{
                             cout<<Gc.S.L.get(Tx::Error_nope_tf2reference)<<endl;
                             break;}
@@ -673,6 +680,14 @@ void Input(short &Barka_status,Gamecontent &Gc,Przedmiot &flashbang,Przedmiot &t
                             validchoice=true;
                             }
                             break;}
+                        case 'x':
+                            {
+                                validchoice=false;
+                                wsparcieDone=true;
+                                dzwiek("Audio_RPG\\menu_back.wav");
+                                screen(Gc);
+                                panele(Gc,flashbang,tel,zatyczki);
+                            break;}
                     default:{
                         cout<<Gc.S.L.get(Tx::Error_nope_tf2reference)<<endl;
                         break;}
@@ -687,6 +702,13 @@ void Input(short &Barka_status,Gamecontent &Gc,Przedmiot &flashbang,Przedmiot &t
             break;}
             default:{ // gdy inny klawisz
                 break;}
+            case 'g':{
+                aktualizuj_efekt(Gc);
+                dzwiek_loop("Audio_RPG\\Kazotsky_Kick_Demo.wav");
+                Gc.gracz.zatancz();
+                screen(Gc);
+                podtrzymuj_emotke(Gc,Gc.gracz);
+            }
         }
         wyczyscBufor();}
     }

@@ -1,10 +1,12 @@
 #ifndef PLAYER_H_INCLUDED
 #define PLAYER_H_INCLUDED
 #include <iostream>
+#include <string>
 #pragma once
+#include "Gamelogic.h"
+#include "Emotes.h"
 #include "Demoman.h"
 #include "Screen.h"
-#include "Gamelogic.h"
 #include "Character.h"
 struct Player : public Character{
     TypRoli Klasa;
@@ -30,6 +32,8 @@ char rzut_granatem(int w,int i,int j,Player &source);
 char sword_pulled(int relI,int relJ,Player &source);
 char SBL_pulled(int relI,int relJ,Player &source);
 char Demo_special_Caber(int relI,int relJ,Player &source);
+char KazotskyKick(int w,int i,int j,const Player &gracz);
+void podtrzymuj_emotke(Gamecontent &Gc, Player &postac);
 char rysujgracza(int w, int i, int j,Gamecontent &Gc);
 
 

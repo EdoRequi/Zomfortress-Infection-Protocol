@@ -49,6 +49,8 @@
 		<Unit filename="Controls.h" />
 		<Unit filename="Demoman.cpp" />
 		<Unit filename="Demoman.h" />
+		<Unit filename="Emotes.cpp" />
+		<Unit filename="Emotes.h" />
 		<Unit filename="Gamelogic.h" />
 		<Unit filename="GamelogicLoc.cpp" />
 		<Unit filename="GamelogicPrimary.cpp" />

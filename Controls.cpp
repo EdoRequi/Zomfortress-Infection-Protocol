@@ -8,7 +8,6 @@ void wyczyscBufor(){
         _getch();
     }
 }
-
 void configureConsoleInput()
 {
     HANDLE h = GetStdHandle(STD_INPUT_HANDLE);

@@ -528,6 +528,20 @@ char Demo_special_Caber(int relI,int relJ,Player &source){
     }
     return ' ';
 }
+void panele_poza_gamestuff(Gamecontent &Gc);
+void podtrzymuj_emotke(Gamecontent &Gc, Player &postac){
+    while(postac.emotka_aktywna){
+        if(_kbhit()){
+            char g=tolower(_getch());
+            if(g=='g') {postac.zatancz();screen(Gc);}
+            else cout<<Gc.S.L.get(Tx::Error_WrongKey)<<endl;
+        }
+        narysujScene(Gc);
+        panele_poza_gamestuff(Gc);
+        postac.aktualizuj_anim();
+        this_thread::sleep_for(chrono::milliseconds(320));
+    }
+}
 char rysujgracza(int w, int i, int j,Gamecontent &Gc)
 {
        switch (Gc.gracz.ObecnaAkcja){
@@ -560,6 +574,14 @@ char rysujgracza(int w, int i, int j,Gamecontent &Gc)
             case AK::ACTION_USED_ITEM:
             {
                 return rzut_granatem(w,i,j,Gc.gracz);
+            }
+            case AK::ACTION_EMOTE:{
+                switch(Gc.gracz.Klasa){
+                    case TR::DEMOMAN:{
+                    char c=KazotskyKick(w,i,j,Gc.gracz);
+                    return c;}
+                    default: return ' ';
+                }
             }
             case AK::NO_ACTION:{
                 if (Gc.gracz.Klasa==TypRoli::DEMOMAN){

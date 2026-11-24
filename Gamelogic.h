@@ -53,6 +53,7 @@ enum class TypRoli{
 
     DEMOMAN
 };
+using TR=TypRoli;
 enum class TypAkcji{
     NO_ACTION,
     ACTION1,
@@ -119,7 +120,7 @@ enum class TextID{
     X_for_exit,X_for_continue,X_for_continue2,
     Eff_info,Eff_Stun,Eff_Drunk,Eff_Powered,Eff_Poisoned,Eff_Weakness,Eff_MoreCritrate,
     Shop_Sh,Shop_SBL,Shop_Sw,Shop_Fl,Shop_Phone,Shop_Ear,
-    Action_info_offensive,Action_info_support,Action_info_equipment, Demo_actions_offensive_Sword,Demo_actions_offensive_SBL,Demo_actions_offensive_specialAttack,
+    Action_info_offensive,Action_info_support,Action_info_equipment,Action_info_emote, Demo_actions_offensive_Sword,Demo_actions_offensive_SBL,Demo_actions_offensive_specialAttack,
     Demo_actions_support_Scrumpy,Demo_actions_support_Shield,
     Name_Engineer,
     GAMEOVER
